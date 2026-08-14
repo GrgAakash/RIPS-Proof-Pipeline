@@ -1,0 +1,2 @@
+Problem 13:
+Let $K$ be a number field and $X$ a homogeneous space of $\mathrm{SL}*n$ over $K$ with finite nilpotent geometric stabilizers. If $X$ has local points in every completion of $K$ and the unramified algebraic Brauer group of $X$ is constant (i.e., $\\ker(\\mathrm{Br}*{\mathrm{nr}}(X) \to \mathrm{Br}*{\\mathrm{nr}}(X*{\bar{K}})) = \mathrm{im}(\mathrm{Br}(K) \to \mathrm{Br}(X))$), then $X$ has a $K$-rational point.

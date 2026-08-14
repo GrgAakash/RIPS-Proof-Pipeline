@@ -1,0 +1,42 @@
+SYSTEM
+You are an independent auditor reviewing a pipeline's decision to EXCLUDE
+a theorem from problem generation. The pipeline dropped it claiming the
+problem could not be made self-contained; with the full source paper in
+hand, decide whether that was justified or a false kill caused by the
+pipeline's text-matching failing to find material that the paper actually
+contains. Output only a single valid JSON object.
+
+USER
+<source_paper title="<<paper_title>>">
+<<flat_source>>
+</source_paper>
+
+<excluded_target id="<<target_id>>">
+<statement><<target_statement>></statement>
+<proof_excerpt><<target_proof>></proof_excerpt>
+</excluded_target>
+
+<exclusion_record>
+reason_code: <<reason_code>>
+detail (the specific items the pipeline could not resolve): <<detail>>
+</exclusion_record>
+
+Question: could a problem file for this target have been made
+self-contained using ONLY material present in the source paper (verbatim
+statements, definitions, notation, standing assumptions; external results
+may be granted as statements) plus standard <<field_baseline>> knowledge?
+
+Check specifically whether the items named in `detail` are in fact
+introduced somewhere in the paper (a definition in prose, a displayed
+equation, a notation convention, an assumption block). If they are, the
+exclusion was a pipeline matching failure, not a property of the paper:
+set exclusion_justified=false, paper_resolves_it=true, and quote where the
+paper introduces them in where_in_paper. If the items genuinely have no
+in-paper introduction (e.g. imported from another paper without statement,
+or intrinsically ambiguous), the exclusion was justified.
+
+Output JSON:
+{"exclusion_justified": true|false, "paper_resolves_it": true|false,
+ "where_in_paper":"exact quote(s) or empty string",
+ "verdict":"2-4 sentences explaining the judgment",
+ "confidence":"high|medium|low"}

@@ -1,0 +1,75 @@
+SYSTEM
+You are a research mathematician performing dependency analysis on a single
+statement of a paper. You are exhaustive and prefer over-inclusion to
+omission. You output only a single valid JSON object, no prose, no fences.
+
+USER
+<field_baseline>
+Assume standard <<field_baseline>> knowledge. Standard notions at that level
+do NOT count as dependencies; anything DEFINED OR PROVED IN THIS PAPER does.
+</field_baseline>
+
+<global_context>
+<<global_context>>
+</global_context>
+
+<statement_index>
+<<statement_index>>
+</statement_index>
+
+<target id="<<target_id>>">
+<statement><<target_statement>></statement>
+<proof><<target_proof>></proof>
+</target>
+
+<mechanically_detected_refs>
+<<mechanical_refs>>
+</mechanically_detected_refs>
+
+Produce the complete list of DIRECT dependencies of the target.
+
+A. statement_deps - items needed merely to UNDERSTAND the target's statement:
+   every paper-defined term, notation, object, or prior construction the
+   statement text uses.
+
+B. proof_deps - items the PROOF relies on, each tagged with kind:
+   - "explicit": linked by an exact source label/reference already represented
+     in statement_index. Verify and COMPLETE the mechanical list. Phrases such
+     as "the previous lemma", "as above", "by (3.2)", and printed theorem or
+     equation numbers are evidence that a dependency exists, but are NOT stable
+     identities: if the statement_index does not provide an unambiguous
+     source-backed id, put the exact phrase under unresolved instead of guessing.
+   - "implicit-definition": a paper-defined term or notation used without
+     citation.
+   - "implicit-result": a prior result of this paper used silently - an
+     estimate applied, a construction reused, a case handled "as before".
+   - "standing": standing assumptions (gc- items) the argument invokes.
+
+C. external_deps - results from OTHER papers used by statement or proof
+   ("[12, Theorem 2.4]", "by a classical result of Serre"). Record the
+   citation key if present, the sentence where it is used (verbatim, field
+   "usage_quote"), and whether the paper itself states the result precisely
+   (if yes, copy that statement verbatim into "statement_tex").
+   citation_key must be a literal \cite{...} key appearing in the text;
+   when a result is invoked by NAME without \cite ("by Hoeffding's lemma"),
+   leave citation_key empty - never put the name in the key field.
+
+Rules:
+1. Reference ids from statement_index or global_context only, copied
+   character-for-character; never invent or reformat ids. A needed concept
+   with no index entry goes under "unresolved" with the exact phrase.
+   Never map a printed theorem/equation number to an id by apparent numbering,
+   ordering, proximity, or mathematical plausibility.
+2. DIRECT dependencies only; transitive closure is computed downstream.
+3. Every dependency carries an EVIDENCE quote - the exact words in the
+   target where it arises - and confidence "high" | "medium" | "low".
+4. Bias toward recall: when unsure, include with confidence "low".
+5. If the proof is "NO PROOF GIVEN IN PAPER", proof_deps must be [].
+
+Output JSON:
+{"target_id":"...",
+ "statement_deps":[{"id":"...","evidence":"...","confidence":"..."}],
+ "proof_deps":[{"id":"...","kind":"...","evidence":"...","confidence":"..."}],
+ "external_deps":[{"citation_key":"","usage_quote":"...",
+   "stated_in_paper":false,"statement_tex":""}],
+ "unresolved":[{"phrase":"...","note":"..."}]}

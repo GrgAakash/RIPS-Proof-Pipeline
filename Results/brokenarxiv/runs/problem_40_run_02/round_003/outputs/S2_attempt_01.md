@@ -1,0 +1,1 @@
+I’ll keep this strictly self-contained and mathematical, with no tooling or outside references. I’m going to focus only on the assigned lemma: an explicit sparse support construction with a rational target and proved remainder/counting bounds.

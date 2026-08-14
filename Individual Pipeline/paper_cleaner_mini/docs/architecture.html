@@ -1,0 +1,604 @@
+<title>Paper Cleaner Mini · Architecture &amp; Control Flow</title>
+<style>
+  :root {
+    --paper: #FAF9F6;
+    --ink: #20242B;
+    --ink-soft: #5C6470;
+    --line: #E5E2DB;
+    --card: #FFFFFF;
+    --accent: #B31B1B;
+    --accent-ink: #8E1515;
+    --accent-wash: rgba(179, 27, 27, 0.06);
+    --ok: #1F6B41;
+    --ok-wash: rgba(31, 107, 65, 0.08);
+    --warn: #8A6A1C;
+    --warn-wash: rgba(138, 106, 28, 0.08);
+    --code-bg: #F2F0EB;
+    --shadow: 0 1px 2px rgba(32, 36, 43, 0.05), 0 4px 14px rgba(32, 36, 43, 0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #15181D;
+      --ink: #E9E7E2;
+      --ink-soft: #9AA1AC;
+      --line: #2B303A;
+      --card: #1C2027;
+      --accent: #E0655B;
+      --accent-ink: #EA7C73;
+      --accent-wash: rgba(224, 101, 91, 0.10);
+      --ok: #63C08D;
+      --ok-wash: rgba(99, 192, 141, 0.10);
+      --warn: #D9B45E;
+      --warn-wash: rgba(217, 180, 94, 0.10);
+      --code-bg: #21252D;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #FAF9F6; --ink: #20242B; --ink-soft: #5C6470; --line: #E5E2DB;
+    --card: #FFFFFF; --accent: #B31B1B; --accent-ink: #8E1515;
+    --accent-wash: rgba(179, 27, 27, 0.06); --ok: #1F6B41;
+    --ok-wash: rgba(31, 107, 65, 0.08); --warn: #8A6A1C;
+    --warn-wash: rgba(138, 106, 28, 0.08); --code-bg: #F2F0EB;
+    --shadow: 0 1px 2px rgba(32, 36, 43, 0.05), 0 4px 14px rgba(32, 36, 43, 0.04);
+  }
+  :root[data-theme="dark"] {
+    --paper: #15181D; --ink: #E9E7E2; --ink-soft: #9AA1AC; --line: #2B303A;
+    --card: #1C2027; --accent: #E0655B; --accent-ink: #EA7C73;
+    --accent-wash: rgba(224, 101, 91, 0.10); --ok: #63C08D;
+    --ok-wash: rgba(99, 192, 141, 0.10); --warn: #D9B45E;
+    --warn-wash: rgba(217, 180, 94, 0.10); --code-bg: #21252D;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    font-size: 15.5px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 980px; margin: 0 auto; padding: 56px 28px 80px; }
+  @media (max-width: 640px) { .page { padding: 36px 18px 60px; } }
+
+  .serif { font-family: Georgia, "Times New Roman", serif; }
+  .mono, code, pre, .tree { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+  a { color: var(--accent-ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  a:hover { border-bottom-color: var(--accent); }
+  a:focus-visible, :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- header ---------- */
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(30px, 5vw, 42px); font-weight: 600;
+    line-height: 1.25; margin: 0 0 18px; text-wrap: balance;
+  }
+  .lede { max-width: 70ch; color: var(--ink-soft); font-size: 16.5px; margin: 0 0 30px; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .stats { display: flex; flex-wrap: wrap; gap: 0; border-block: 1px solid var(--line); margin-bottom: 26px; }
+  .stat { padding: 14px 26px 14px 0; margin-right: 26px; }
+  .stat + .stat { border-left: 1px solid var(--line); padding-left: 26px; }
+  .stat b {
+    display: block; font-size: 21px; font-weight: 650; letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat span { font-size: 12.5px; color: var(--ink-soft); }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 58px; }
+  .sec-label {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px; letter-spacing: 0.14em; color: var(--accent-ink);
+    margin: 0 0 8px;
+  }
+  h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 25px; font-weight: 600; margin: 0 0 14px; line-height: 1.35; text-wrap: balance;
+  }
+  h3 { font-size: 16px; font-weight: 650; margin: 26px 0 8px; }
+  p { max-width: 70ch; margin: 0 0 14px; }
+  p.dim, li.dim { color: var(--ink-soft); }
+  ul, ol { max-width: 70ch; margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  code {
+    background: var(--code-bg); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 5px; font-size: 0.86em;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.65; margin: 0 0 14px;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+  .cmt { color: var(--ink-soft); }
+
+  /* ---------- pipeline (arch) diagram ---------- */
+  .flow-scroll { overflow-x: auto; padding-bottom: 6px; margin: 22px 0 6px; }
+  .flow { display: flex; align-items: stretch; gap: 0; min-width: 820px; }
+  .flow-node {
+    flex: 1 1 0; background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 13px 15px; box-shadow: var(--shadow); min-width: 138px;
+  }
+  .flow-node .k {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.1em; color: var(--ink-soft);
+    text-transform: uppercase; display: block; margin-bottom: 4px;
+  }
+  .flow-node .n { font-weight: 650; font-size: 14.5px; display: block; margin-bottom: 3px; }
+  .flow-node .d { font-size: 12.5px; color: var(--ink-soft); line-height: 1.55; display: block; }
+  .flow-arrow {
+    flex: 0 0 auto; display: flex; align-items: center; padding: 0 7px;
+    color: var(--accent-ink); font-size: 17px;
+  }
+  .substrate {
+    min-width: 820px; margin-top: 10px; border: 1px dashed var(--line); border-radius: 10px;
+    padding: 10px 16px; font-size: 13px; color: var(--ink-soft);
+    display: flex; flex-wrap: wrap; gap: 6px 26px; background: transparent;
+  }
+  .substrate b { color: var(--ink); font-weight: 600; }
+  .flow-wrap { min-width: 820px; }
+
+  /* ---------- SVG flowchart ---------- */
+  .svg-scroll { overflow-x: auto; margin: 24px 0 8px; }
+  svg.loop { display: block; min-width: 660px; max-width: 760px; margin: 0 auto; }
+  svg.loop .box { fill: var(--card); stroke: var(--line); stroke-width: 1.2; }
+  svg.loop .box-role { stroke: var(--accent); stroke-width: 1.4; }
+  svg.loop .box-ok { fill: var(--ok-wash); stroke: var(--ok); stroke-width: 1.4; }
+  svg.loop .box-bad { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 1.4; }
+  svg.loop .pill { fill: var(--code-bg); stroke: var(--line); }
+  svg.loop .t { fill: var(--ink); font-size: 14px; font-weight: 640; }
+  svg.loop .s { fill: var(--ink-soft); font-size: 11.5px; }
+  svg.loop .lab { fill: var(--ink-soft); font-size: 11px; }
+  svg.loop .lab-ok { fill: var(--ok); font-size: 11.5px; font-weight: 600; }
+  svg.loop .lab-bad { fill: var(--accent-ink); font-size: 11.5px; font-weight: 600; }
+  svg.loop .edge { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; }
+  svg.loop .edge-ok { stroke: var(--ok); }
+  svg.loop .edge-bad { stroke: var(--accent); }
+  .fig-cap { text-align: center; font-size: 12.5px; color: var(--ink-soft); margin: 6px 0 0; }
+
+  /* ---------- role cards ---------- */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 10px; }
+  @media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-top: 3px solid var(--accent);
+    border-radius: 10px; padding: 18px 18px 14px; box-shadow: var(--shadow);
+  }
+  .card h4 { margin: 0 0 2px; font-size: 16px; }
+  .card .model {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
+    color: var(--ink-soft); display: block; margin-bottom: 12px;
+  }
+  .card dl { margin: 0; font-size: 13.5px; }
+  .card dt {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-top: 11px;
+  }
+  .card dd { margin: 3px 0 0; line-height: 1.6; }
+
+  /* ---------- gate list ---------- */
+  .gate { counter-reset: g; margin: 20px 0 8px; padding: 0; list-style: none; max-width: none; }
+  .gate li {
+    counter-increment: g; position: relative; padding: 14px 16px 14px 58px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--card);
+    margin-bottom: 10px; max-width: none; box-shadow: var(--shadow);
+  }
+  .gate li::before {
+    content: "G" counter(g);
+    position: absolute; left: 16px; top: 15px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
+    color: var(--accent-ink); border: 1px solid var(--accent);
+    border-radius: 6px; padding: 2px 6px; background: var(--accent-wash);
+  }
+  .gate b { font-weight: 650; }
+  .gate .sub { color: var(--ink-soft); font-size: 13.5px; display: block; margin-top: 2px; }
+
+  /* ---------- callouts ---------- */
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--ok);
+    background: var(--ok-wash); border-radius: 8px; padding: 13px 16px;
+    font-size: 14px; margin: 16px 0; max-width: none;
+  }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-wash); }
+  .callout.red { border-left-color: var(--accent); background: var(--accent-wash); }
+  .callout b { font-weight: 650; }
+
+  /* ---------- tables ---------- */
+  .tbl-scroll { overflow-x: auto; margin: 18px 0 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600;
+  }
+  td { font-variant-numeric: tabular-nums; }
+  td.win { color: var(--ok); font-weight: 650; }
+  td.lose { color: var(--ink-soft); }
+
+  /* ---------- tree ---------- */
+  .tree {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; overflow-x: auto; font-size: 12.5px; line-height: 1.7; margin: 18px 0 8px;
+    white-space: pre;
+  }
+  .tree i { color: var(--ink-soft); font-style: normal; }
+  .tree b { color: var(--accent-ink); font-weight: 650; }
+
+  footer {
+    margin-top: 70px; padding-top: 18px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-soft);
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">Paper Cleaner Mini · Design Document</p>
+    <h1>Three roles, one gate:<br>the architecture of a minimal problem-setting pipeline</h1>
+    <p class="lede">
+      <strong>paper_cleaner_mini</strong> is the minimal counterpart to the main repo's 8-step graph
+      pipeline: three gpt-5.5 roles that each hold the <strong>full paper</strong> (author /
+      adversarial checker / repairer) plus one deterministic gate, turning target theorems of arXiv
+      math papers into self-contained, leak-proof "prove this theorem" problem packages. No
+      dependency-graph parsing, no text-matching ladder — the main repo's 46 engineering lessons are
+      all distilled into the prompts, not the code.
+    </p>
+    <div class="stats">
+      <div class="stat"><b>3 + 1</b><span>LLM roles + independent audit</span></div>
+      <div class="stat"><b>2,281</b><span>lines of Python (incl. audit &amp; compare)</span></div>
+      <div class="stat"><b>5</b><span>prompt files (373 lines)</span></div>
+      <div class="stat"><b>3</b><span>dependencies (openai · pydantic · pyyaml)</span></div>
+      <div class="stat"><b>16 / 16</b><span>shipped packages fully clean on audit</span></div>
+    </div>
+    <p class="dim" style="font-size:13px">The Mini runtime is standalone: it imports only this folder's support files. Third-party paper inputs are deliberately git-ignored and must be prepared locally.</p>
+  </header>
+
+  <!-- ======================= §1 ======================= -->
+  <section>
+    <p class="sec-label">§1 · ARCHITECTURE</p>
+    <h2>Overall architecture: a five-stop data flow</h2>
+    <p>
+      The whole system is a one-way data flow: material in, problem packages out, a referee to
+      accept them. Each of the five nodes reads only the previous stop's artifacts; there is no
+      hidden state between them.
+    </p>
+    <div class="flow-scroll">
+      <div class="flow-wrap">
+        <div class="flow">
+          <div class="flow-node">
+            <span class="k">inputs/</span>
+            <span class="n">Paper material</span>
+            <span class="d">flat.tex full text · meta · statement index · target selection (from main-pipeline steps 1–5)</span>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <span class="k">stage2.py</span>
+            <span class="n">Generation loop</span>
+            <span class="d">author → gates → checker → repair; targets run concurrently, independently</span>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <span class="k">runs/</span>
+            <span class="n">Packages + ledger</span>
+            <span class="d">problem.md · frozen target.tex/target.json · manifest · excluded.json · cache · logs</span>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <span class="k">audit.py</span>
+            <span class="n">Independent audit</span>
+            <span class="d">an audit-grade model re-checks every package and every exclusion against the paper</span>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <span class="k">compare_audits.py</span>
+            <span class="n">Comparison verdict</span>
+            <span class="d">side by side vs the main-pipeline baseline: clean rate · fatals · false kills</span>
+          </div>
+        </div>
+        <div class="substrate">
+          <span>Shared substrate:</span>
+          <span><b>minilib.py</b> — config / RunContext / LLM layer (cache · rate-limit retries · structured output) / schemas / deterministic checks</span>
+          <span><b>prompts/</b> — where all behavioral rules live</span>
+          <span><b>config.yaml</b> — concurrency · token budgets · cache switch</span>
+        </div>
+      </div>
+    </div>
+    <p class="fig-cap">Fig. 1 · Data flow and shared substrate. The output layout is byte-compatible with the main pipeline's, so both sides can be accepted by the same audit program.</p>
+
+    <h3>Design principles: three things inherited from the main pipeline</h3>
+    <ul>
+      <li><b>Generator ≠ verifier</b> — authoring and checking are always two independent calls; the checker's stance is set by its prompt to "refute the author's three claims";</li>
+      <li><b>Deterministic backstop</b> — where the LLM's word doesn't count (verbatim overlap, macro closure, section structure), pure code decides, and passing is mandatory before shipping;</li>
+      <li><b>Honest exclusion</b> — problems that can't be repaired don't ship; every exclusion carries a reason code and its unresolved items, open to audit review.</li>
+    </ul>
+  </section>
+
+  <!-- ======================= §2 ======================= -->
+  <section>
+    <p class="sec-label">§2 · CONTROL FLOW</p>
+    <h2>Per-target control flow</h2>
+    <p>
+      Each paper's attack targets = the main pipeline's selection (mains ∪ hardest; 19 across the
+      four papers). Targets are independent of one another and run concurrently (semaphore
+      default 8). The lifecycle of a single target:
+    </p>
+
+    <div class="svg-scroll">
+      <svg class="loop" viewBox="0 0 700 620" role="img" aria-label="Per-target control flow: the author produces the body, it passes the deterministic gates and the adversarial checker; on success it ships, otherwise up to two repair rounds, after which the target is excluded">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="context-stroke"></path>
+          </marker>
+        </defs>
+
+        <!-- target pill -->
+        <rect class="pill" x="245" y="14" width="210" height="38" rx="19"></rect>
+        <text class="t" x="350" y="38" text-anchor="middle" style="font-size:13px">Target theorem (selection.json)</text>
+
+        <line class="edge" x1="350" y1="52" x2="350" y2="76" marker-end="url(#ar)"></line>
+
+        <!-- author -->
+        <rect class="box box-role" x="185" y="78" width="330" height="66" rx="10"></rect>
+        <text class="t" x="350" y="104" text-anchor="middle">① author · problem setter</text>
+        <text class="s" x="350" y="126" text-anchor="middle">paper + forbidden proof + macros → 7-section body</text>
+
+        <line class="edge" x1="350" y1="144" x2="350" y2="168" marker-end="url(#ar)"></line>
+
+        <!-- det gate -->
+        <rect class="box" x="185" y="170" width="330" height="62" rx="10"></rect>
+        <text class="t" x="350" y="194" text-anchor="middle">② deterministic gates (pure code)</text>
+        <text class="s" x="350" y="214" text-anchor="middle">section structure · macro closure · leak scan</text>
+
+        <line class="edge" x1="350" y1="232" x2="350" y2="256" marker-end="url(#ar)"></line>
+
+        <!-- checker -->
+        <rect class="box box-role" x="185" y="258" width="330" height="62" rx="10"></rect>
+        <text class="t" x="350" y="282" text-anchor="middle">③ checker · adversarial review</text>
+        <text class="s" x="350" y="302" text-anchor="middle">paper in hand → issues (fatal/minor) + 3 verdicts</text>
+
+        <line class="edge" x1="350" y1="320" x2="350" y2="344" marker-end="url(#ar)"></line>
+
+        <!-- decision -->
+        <polygon class="box" points="350,346 478,404 350,462 222,404"></polygon>
+        <text class="t" x="350" y="399" text-anchor="middle" style="font-size:13.5px">ship decision</text>
+        <text class="s" x="350" y="420" text-anchor="middle" style="font-size:10.5px">3 verdicts ∧ 0 fatal ∧ 0 gate hits</text>
+
+        <!-- YES -> ship -->
+        <polyline class="edge edge-ok" points="222,404 160,404 160,528" marker-end="url(#ar)"></polyline>
+        <text class="lab-ok" x="168" y="392">yes</text>
+        <rect class="box box-ok" x="48" y="530" width="224" height="60" rx="10"></rect>
+        <text class="t" x="160" y="554" text-anchor="middle">✓ ship</text>
+        <text class="s" x="160" y="574" text-anchor="middle">problem.md + report + assembly</text>
+
+        <!-- NO w/ budget -> repair -->
+        <polyline class="edge edge-bad" points="478,404 596,404 596,240" marker-end="url(#ar)"></polyline>
+        <text class="lab-bad" x="488" y="392">no, budget left</text>
+        <rect class="box box-role" x="524" y="166" width="144" height="72" rx="10"></rect>
+        <text class="t" x="596" y="194" text-anchor="middle">④ repair</text>
+        <text class="s" x="596" y="214" text-anchor="middle">findings → revision</text>
+        <text class="lab" x="606" y="330">≤ 2 rounds</text>
+
+        <!-- repair loops back to gate -->
+        <polyline class="edge" points="524,202 510,202" marker-end="url(#ar)"></polyline>
+
+        <!-- NO, exhausted -> exclude -->
+        <polyline class="edge edge-bad" points="350,462 350,528" marker-end="url(#ar)"></polyline>
+        <text class="lab-bad" x="360" y="500">repair budget spent</text>
+        <rect class="box box-bad" x="238" y="530" width="224" height="60" rx="10"></rect>
+        <text class="t" x="350" y="554" text-anchor="middle">✗ exclude</text>
+        <text class="s" x="350" y="574" text-anchor="middle">excluded.json: reason + unresolved</text>
+      </svg>
+    </div>
+    <p class="fig-cap">Fig. 2 · Per-target control flow. ①③④ are LLM calls (red outline), ② is pure code; each round = one gate pass + one check.</p>
+
+    <h3>Exact ship / exclude rules</h3>
+    <ul>
+      <li><b>Ship condition (all required)</b>: all three checker verdicts true, no fatal issue, zero deterministic-gate hits;</li>
+      <li><b>Exclusion reason codes (mapped by priority)</b>: uncleared leak → <code>leak_in_required_context</code>; symbol/term gaps → <code>self_containment_unresolvable</code>; missing tools → <code>sufficiency_unresolvable</code>;</li>
+      <li><b>Round ledger</b>: a snapshot before each repair round is saved as <code>problem.iterN.md</code>; on exclusion the final draft and report are kept for the post-mortem.</li>
+    </ul>
+  </section>
+
+  <!-- ======================= §3 ======================= -->
+  <section>
+    <p class="sec-label">§3 · ROLES</p>
+    <h2>The three LLM roles: who sees what</h2>
+    <p>
+      By default the three roles share one model (auto-selected strongest tier available to the
+      account — gpt-5.5 in the experiment, reasoning effort = high; <code>--check-model</code> can
+      point the checker at a different model). The differences live entirely in each prompt's field
+      of view and stance. The target theorem's own proof is fenced off as the
+      <b style="color:var(--accent-ink)">forbidden zone (forbidden_source)</b>:
+      the author and repairer may read it to judge which prerequisites the solver will need, but not
+      one sentence of it may enter the problem.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <h4>① author · problem setter</h4>
+        <span class="model">prompts/s2_author.txt · once per target (+1 retry on bad format)</span>
+        <dl>
+          <dt>Sees</dt>
+          <dd>full paper · target statement · forbidden proof · the paper's macro table</dd>
+          <dt>Produces</dt>
+          <dd>editable Sections 0–5 only; the header and immutable source-backed Section 6 are stitched on by code</dd>
+          <dt>Key rules</dt>
+          <dd>verbatim quotes first, never invent mathematics; external results transcribed in full (usage-quotes banned); references must resolve within the file</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h4>③ checker · adversarial review</h4>
+        <span class="model">prompts/s2_check.txt · once per round</span>
+        <dl>
+          <dt>Sees</dt>
+          <dd>full paper · current problem file · target proof (as the sufficiency reference)</dd>
+          <dt>Produces</dt>
+          <dd>issue list (fatal/minor + actionable fix_hint) + three verdicts: self-contained / leak-free / sufficient</dd>
+          <dt>Key rules</dt>
+          <dd>stance = refute; a granted statement's presence is not a leak — narrating the proof idea is; instances of parameterized notation count as defined; local steps re-derivable in ~3 lines are not gaps</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h4>④ repair · repairer</h4>
+        <span class="model">prompts/s2_repair.txt · at most 2 rounds</span>
+        <dl>
+          <dt>Sees</dt>
+          <dd>full paper · current file · findings (checker fatals + gate hits) · forbidden proof</dd>
+          <dt>Produces</dt>
+          <dd>complete revised Sections 0–5 + an unfixed list; it never writes the target section</dd>
+          <dt>Key rules</dt>
+          <dd>fill gaps with the paper's own text; results may only be quoted, never synthesized; when rewriting a leak, keep the legitimate bare grant; forbidden material never enters</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= §4 ======================= -->
+  <section>
+    <p class="sec-label">§4 · DETERMINISTIC GATE</p>
+    <h2>The deterministic gates: four things the LLM doesn't get to decide</h2>
+    <p>
+      Before each checker round, pure code runs three checks; any hit enters repair as a fatal
+      finding and single-handedly vetoes shipping. This layer shares its algorithms with the main
+      pipeline's audit scans, so both sides are measured with the same ruler.
+    </p>
+    <ol class="gate">
+      <li>
+        <b>Section-structure check</b> — the model's six editable headings must all be present and in order (<code>## 0. Macro definitions</code> … <code>## 5. Available results</code>).
+        <span class="sub">Bad format → one re-ask; the controller then appends Section 6 itself.</span>
+      </li>
+      <li>
+        <b>Macro closure</b> — every non-standard LaTeX command appearing in the file must be defined in the file's <em>own</em> Section 0.
+        <span class="sub">Stricter than the main pipeline's g3: g3 accepts "defined in the paper's preamble"; mini requires the problem to render on its own.</span>
+      </li>
+      <li>
+        <b>Verbatim-proof leak scan</b> — the target proof's normalized text slides over the whole file in 120-character windows (Section 3's external-results area gets an extra 50-character floor); any hit is fatal.
+        <span class="sub">Whitelist = target statement + macros + verbatim-quoted index blocks; usage-quotes are never exempt.</span>
+      </li>
+      <li>
+        <b>Target-integrity gate</b> — only deterministic parser entries with a valid source span and matching statement/source hashes may be targets; <code>target.tex</code>, <code>target.json</code>, Section 6, the independent audit, and the solver export must all agree exactly.
+        <span class="sub">Theorem numbers are never synthesized or used as IDs; uncertainty causes exclusion, never reconstruction.</span>
+      </li>
+    </ol>
+    <div class="callout">
+      <b>Field record:</b> across the four-paper batch, the gates caught verbatim proof overlap at
+      least 4 times on files where the checker had all three verdicts green — the
+      "LLM check + deterministic backstop" layering is not a fuse, it is a routine worker.
+    </div>
+    <div class="callout red">
+      <b>Cautionary tale (since fixed):</b> the standard-command whitelist initially missed
+      <code>providecommand</code>, so the repairer's perfectly legal fix line
+      <code>\providecommand{\mathds}…</code> was itself judged an illegal command — unrecoverable by
+      construction — and two lemmas were wrongly killed. Lesson: wherever the LLM has free rein, the
+      deterministic whitelist must cover every legal form it might use.
+    </div>
+  </section>
+
+  <!-- ======================= §5 ======================= -->
+  <section>
+    <p class="sec-label">§5 · ARTIFACTS &amp; CACHE</p>
+    <h2>Artifacts, cache, and resumable runs</h2>
+    <div class="tree">paper_cleaner_mini/
+├── stage2.py            <i>generation loop (all of §2's control flow)</i>
+├── audit.py             <i>independent audit referee</i>
+├── compare_audits.py    <i>side-by-side comparison of two audit reports</i>
+├── minilib.py           <i>config / LLM layer / schemas / deterministic checks</i>
+├── config.yaml · requirements.txt · README.md
+├── prompts/             <i>s2_author · s2_check · s2_repair · audit_pkg · audit_excl</i>
+├── data/latex_std_commands.txt
+├── inputs/&lt;paper&gt;/      <i>flat.tex · meta.json · statements.v2.json · selection.json</i>
+└── runs/&lt;paper&gt;/        <i>output (layout-compatible with the main pipeline)</i>
+    ├── <b>manifest.json</b>              <i>★ problem manifest (for downstream)</i>
+    ├── <b>packages/&lt;target&gt;/stage2/</b>
+    │   ├── <b>problem.md</b>             <i>★ the problem itself</i>
+    │   ├── <b>target.tex · target.json</b> <i>★ exact target text + source/hash provenance</i>
+    │   ├── problem.iterN.md         <i>per-round snapshots (for the post-mortem)</i>
+    │   ├── report.json · assembly.json
+    ├── excluded.json                <i>honest ledger: reason code + details for every exclusion</i>
+    ├── cache/                       <i>LLM call cache (the key to resumable runs)</i>
+    └── logs/run.jsonl               <i>structured log: one line per call</i></div>
+    <p style="margin-top:14px">
+      <b>Cache key</b> = model + prompt-template hash + all variable bindings + schema name +
+      sampling params. Identical input always hits; any change anywhere always misses — so
+      <b>re-running as-is is always free</b>, and editing a prompt recomputes only the affected calls.
+    </p>
+    <div class="callout">
+      <b>Example:</b> after the whitelist fix, re-running 2606.19639 hit the cache on all 24 calls —
+      zero live calls, done in about a second — and the two wrongly-killed lemmas shipped straight
+      away under the gates' new verdict, at zero cost.
+    </div>
+  </section>
+
+  <!-- ======================= §6 ======================= -->
+  <section>
+    <p class="sec-label">§6 · EVIDENCE</p>
+    <h2>Relation to the main pipeline, and what earns the "mini"</h2>
+    <p>
+      mini deliberately <b>reuses the main pipeline's target selection</b> (the same 19 targets) and
+      <b>the same audit referee</b>, collapsing the experimental variable to one question: on the
+      "package + verify" segment, which does better — the graph machinery, or a strong model reading
+      the paper directly. The statement index supplies the target statement/proof, immutable source
+      span and hashes, macro table, and whitelist text for the leak scan —
+      the dependency graph is never read.
+    </p>
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr><th>Same referee, four papers (2026-07-09)</th><th>Main pipeline v2.2 (8 steps)</th><th>mini (3 roles)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Shipped packages</td><td class="lose">13</td><td class="win">16</td></tr>
+          <tr><td>Fully clean packages (all three pass + 0 fatal)</td><td class="lose">3</td><td class="win">16</td></tr>
+          <tr><td>Total fatal issues</td><td class="lose">17</td><td class="win">0</td></tr>
+          <tr><td>Deterministic leak-scan hits</td><td class="lose">3</td><td class="win">0</td></tr>
+          <tr><td>Exclusions (of which audit-judged false kills)</td><td class="lose">6 (3)</td><td class="win">3 (2 judged salvageable)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <b>Reservation (twin referees):</b> mini's in-loop checker and the audit referee are the same
+      model on nearly the same task, so the 16/16 may be inflated. The relative conclusion
+      (mini ≥ pipeline) is solid; the absolute "zero defects" should be re-confirmed with a
+      different referee (e.g. <code>--model o3</code> for the audit, or stage2's
+      <code>--check-model</code>) or by manual spot checks before it is final.
+    </div>
+    <p class="dim" style="font-size:13.5px">
+      Experiment totals: 99 live calls, 4.1M input / 0.67M output tokens (0.51M of it reasoning);
+      about 35 minutes end to end with three papers in parallel × concurrency 8.
+    </p>
+  </section>
+
+  <!-- ======================= §7 ======================= -->
+  <section>
+    <p class="sec-label">§7 · QUICKSTART</p>
+    <h2>The whole flow in three commands</h2>
+    <pre><code><span class="cmt"># setup (once): python3 -m venv .venv && .venv/bin/pip install -r requirements.txt</span>
+export OPENAI_API_KEY=sk-...
+
+.venv/bin/python stage2.py --papers all --parallel 8     <span class="cmt"># generate (--dry-run previews the plan for free)</span>
+.venv/bin/python audit.py  --papers all --effort high    <span class="cmt"># independent audit → runs/audit/audit_report.md</span>
+.venv/bin/python compare_audits.py \
+    ../paper_cleaner/runs/audit/audit_report.json \
+    runs/audit/audit_report.json                          <span class="cmt"># side by side vs the main pipeline → comparison.md</span></code></pre>
+    <p class="dim" style="font-size:13.5px">
+      Adding a paper: run the main repo through step 5, then copy the four files
+      <code>flat.tex / meta.json / statements.v2.json / selection.json</code> into
+      <code>inputs/&lt;arxiv-id&gt;/</code>. mini is the comparison arm of an experiment — download
+      and parsing are deliberately left out (for now).
+    </p>
+  </section>
+
+  <footer>
+    Paper Cleaner Mini · Architecture &amp; Control Flow — generated 2026-07-09 ·
+    source lives in <code>paper_cleaner_mini/</code> ·
+    experiment design and judging rules: the main repo's <code>docs/stage2-experiment.md</code> ·
+    full audit comparison table: <code>runs/audit/comparison.md</code>
+  </footer>
+</div>

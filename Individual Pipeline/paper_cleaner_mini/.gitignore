@@ -1,0 +1,18 @@
+# Secrets
+*.key
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Outputs & inputs contain third-party paper content and raw API
+# responses - do not publish
+runs/
+runs_*/
+inputs/
+*.log
+
+# OS
+.DS_Store

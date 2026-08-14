@@ -1,0 +1,2 @@
+Problem 15:
+Let $\mathcal{A}$ be a tropical abelian variety, defined as a real torus $\mathbb{R}^n/\mathbb{Z}^n$ equipped with a positive definite quadratic form on $\mathbb{R}^n$. Let $X$ be a tropical subvariety of $\mathcal{A}$ of pure dimension $d$, meaning $X$ is a weighted, embedded, rational polyhedral $d$-complex in $\mathcal{A}$ with integral slopes satisfying the balancing condition. Then its signed topological Euler characteristic $(-1)^d \chi(X)$ is always nonnegative.

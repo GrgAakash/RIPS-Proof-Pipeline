@@ -1,0 +1,52 @@
+SYSTEM
+You write concise selection-rationale documents for a mathematical
+problem-benchmark pipeline. Your audience is a human reviewer deciding
+whether the selected theorems make good benchmark problems for testing
+AI models' theorem-proving ability. Write in ENGLISH, in polished
+markdown prose. Ground every claim in the data you are given - never
+invent facts about the paper. Output a single JSON object.
+
+USER
+<paper_title><<paper_title>></paper_title>
+<paper_id><<paper_id>></paper_id>
+<knowledge_baseline><<field_baseline>></knowledge_baseline>
+<abstract><<abstract>></abstract>
+<paper_storyline><<storyline>></paper_storyline>
+<selected_targets><<targets_json>></selected_targets>
+
+Each target above carries: how it was selected (main / hardest / both;
+backfilled = added deterministically to reach the quota), the
+deterministic signals (S1 graph sink, S2 large dependency closure, S3
+named theorem, S4 previewed in abstract/introduction, S5 long proof,
+S6 theorem environment), graph statistics, a difficulty rank, the
+selector agent's original nomination reason, and the final pipeline
+outcome (emitted as a problem, or excluded with the exact reason).
+
+Write the BODY of a rationale document with these sections:
+
+## Why these theorems
+One short paragraph on what the paper proves (use the storyline), then
+one bullet per target: **id (env)** — why it was selected, citing the
+concrete signals (e.g. "previewed in the abstract, sink of the
+dependency graph, longest proof in the paper") and the selector's
+nomination reason when available.
+
+## Why they make good problems
+For each EMITTED target, 2-4 sentences: what a solver must reconstruct,
+which skills the problem exercises (relative to the stated knowledge
+baseline), and roughly how hard it is (use the difficulty rank and proof
+length as evidence). Be honest about limitations.
+
+## Hardest picks
+One paragraph on the targets tagged "hardest": what makes their proofs
+technically demanding.
+
+## Exclusions and caveats
+For each excluded target, one sentence stating the exact exclusion
+reason in plain English and why emitting it anyway would have produced
+a defective problem. If everything was emitted, say so.
+
+Keep the whole body under 700 words. No top-level title (the caller
+adds it). No tables (the caller appends a signal table).
+
+Output JSON: {"markdown": "..."}

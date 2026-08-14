@@ -1,0 +1,108 @@
+Fresh no-history solver-only S0-S6 pipeline run. You are the S0 Blueprint Solver for Round 1 setup rerun. Do not use memory, prior task history, previous outputs, answer keys, files outside this prompt, web search, internet, API keys, or code execution/tools of any kind. Use only the cleaned skeleton packet below, the target theorem, the fixed solver prompt below, and genuinely standard mathematical background.
+
+Cleaned skeleton packet for this run (minimal, constructed only from the user-supplied problem statement; contains definitions, notation, and assumptions only, no proof facts):
+- Dimension: d >= 2.
+- One-phase free boundary incompressible Navier-Stokes with surface tension: a classical smooth solution on [0,T_*) consists of a time-dependent fluid domain Omega(t) in R^d, velocity u, pressure p, viscosity nu>0, and surface tension sigma>0, satisfying incompressible Navier-Stokes in Omega(t), the kinematic condition that the free boundary moves with the fluid velocity, and the dynamic stress balance with surface tension on the free boundary.
+- The fluid domain is the exterior of a bubble: Omega(t)=R^d \ B(t), where B(t) is a bounded bubble region and Gamma(t)=partial Omega(t)=partial B(t) is a compact smooth hypersurface for every t<T_*.
+- A finite-time bubble collapse / free-boundary self-intersection at T_* means that Gamma(t) remains a smooth embedded hypersurface for t<T_* but its material parametrization loses injectivity as t approaches T_*: there exist distinct labels a != b on the reference hypersurface such that |X(t,a)-X(t,b)| -> 0 as t upward T_*.
+- Principal curvatures kappa_1,...,kappa_{d-1} are those of Gamma(t). The curvature size is K(t)=sup_{x in Gamma(t)} max_i |kappa_i(x,t)|; this is the standard interpretation of the asserted supremum of principal curvatures as a curvature blow-up criterion.
+- Target regularity regime: classical smooth solution for all t<T_*; all geometric and PDE quantities used below are meaningful on compact subintervals of [0,T_*).
+- No formal supporting theorem statements are supplied in the skeleton.
+
+S0 Blueprint Solver. Fresh no-internet chat.
+----------------------------------------------------------------
+You are S0, the Blueprint Solver. Your task is to create a proof blueprint for the target
+theorem. Do not write the final proof.
+
+You are given:
+1. a cleaned skeleton PDF or TeX file;
+2. the target theorem;
+3. the Allowed supporting statements list;
+4. the additional mathematical guidance list, if any.
+
+Use only the supplied packet, the allowed supporting statements, the guidance list, genuinely
+standard background, and facts that later subproblem solvers would need to prove inside the
+current proof. Do not use external sources, web search, related writeups, unstated
+task-specific facts, hidden lemmas, or any material not included in the provided packet.
+
+If a guidance item is labeled `[INTERNALLY VERIFIED AUXILIARY RESULT E###]`, treat exactly its
+stated lemma as established and available without reproof. Record E### as an additional-guidance
+tool wherever it is used. Do not reconstruct its hidden branch proof or infer a stronger claim.
+
+The blueprint is part of the current-round proof artifact. It may be inspected by verifiers,
+but it is not carried into later Solver rounds.
+
+Allowed supporting statements:
+No formal supporting statements are supplied. Definitions, notation, and assumptions needed to state or parse the target theorem from the cleaned skeleton packet are allowed. Genuinely standard background facts may be used if named and stated precisely. No statement equivalent to, stronger than, or logically downstream from the target theorem is allowed.
+
+If required inputs are missing, stop and write "SETUP FAILURE: missing input." Then list the
+missing input(s).
+
+Produce exactly the following sections.
+
+1. Target decomposition
+
+target_label:
+target_type:
+main_goal:
+variables_and_parameters:
+conclusion_to_prove:
+
+2. Available tools
+
+For each planned tool:
+tool:
+source_status: provided definition / notation / assumption; allowed supporting statement;
+additional guidance item; standard background fact; proved inside the current proof; or
+unsupported or unclear.
+exact_statement_or_fact:
+intended_role_in_proof:
+
+3. Subclaim support graph
+
+Break the proof into 3-8 subclaims. For each:
+id:
+statement:
+uses_prior_subclaims:
+purpose:
+status: follows from allowed statement / follows from guidance / standard background / must be
+proved in final proof.
+suggested_solver: S1 / S2 / S3 / S4 / S5.
+
+4. Hardest step prediction
+
+hardest_step_id:
+hardest_step_description:
+risk_if_wrong:
+how_final_proof_should_handle_it:
+
+5. Failure-mode checks
+
+circularity_check:
+full_theorem_check:
+source_check:
+hypothesis_check:
+notation_check:
+standard_background_check:
+
+6. Subproblem assignment table
+
+Assign S1-S5. Each assignment should be self-contained and should not require seeing any
+source outside the supplied packet and this blueprint.
+
+S1:
+S2:
+S3:
+S4:
+S5:
+
+7. Web-source confirmation
+
+Write "no web sources used", or list any unavoidable lookup that was explicitly permitted.
+
+--- INPUTS FOR THIS RUN ---
+Target theorem:
+Problem 53. Consider the one-phase free boundary problem for the incompressible Navier-Stokes equations in R^d (d >= 2) with surface tension, where the initial fluid domain is the exterior of a bubble. Due to the combined regularizing effects of viscosity and surface tension, no splash singularity can form in finite time. Specifically, if the bubble collapses, i.e. its free boundary self-intersects, in a finite time T_*, then the supremum of the principal curvatures of its free boundary must necessarily blow up as t approaches T_*.
+
+Additional mathematical guidance:
+None

@@ -1,0 +1,3 @@
+Problem 10:
+
+A weakly o-minimal structure is a linearly ordered structure in which every definable subset of the domain is a finite union of convex sets. Let $\mathcal{M} = (M, +, \cdot, \le, \dots)$ be a weakly o-minimal expansion of an ordered field. Then for any open definable set $U \subseteq M$ and any definable function $f : U \to M$, there exists an open interval $I \subseteq U$ on which $f$ is differentiable.

@@ -1,0 +1,1 @@
+I’ll keep this self-contained and only use the local valuation criterion as a standard/background input in the way the assigned C4 explicitly requests.

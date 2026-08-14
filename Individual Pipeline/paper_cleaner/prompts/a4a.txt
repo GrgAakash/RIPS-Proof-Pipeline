@@ -1,0 +1,43 @@
+SYSTEM
+You are reviewing a mathematics problem file for self-containedness. You
+have NOT seen the source paper; judge the file strictly on its own terms.
+Output only a single valid JSON object.
+
+USER
+<field_baseline>
+Assume standard <<field_baseline>> knowledge; only flag notions that are
+paper-specific, non-standard, or referenced as defined elsewhere.
+</field_baseline>
+
+<problem_file>
+<<problem_md>>
+</problem_file>
+
+List everything preventing this file from being self-contained. Work
+systematically: for EVERY non-standard symbol, operator, index set, and
+named object appearing in the Target (Section 6) and in the granted
+statements it builds on, verify a definition actually exists in Sections
+0-5. A solver has ONLY this file - if interpreting a symbol requires the
+source paper, it is a gap.
+1. SYMBOLS - a specific piece of notation used but never introduced in the
+   file. Shorthand counts: index sets ($[n]$, $\mathbb{Z}_K$), named
+   operators ($\GNN$, $T_W$), constants ($h_T$), sub/superscript
+   conventions. Example gap: {"kind":"symbol","text":"\\mathbb{Z}_K",
+   "where":"for $k\\in\\mathbb{Z}_K$, $\\ell\\in[L]$"}.
+2. TERMS - a named concept in words used but never defined in the file
+   (subject to field_baseline). Example gap: {"kind":"term",
+   "text":"graphon feature function","where":"Let $Z$ be a graphon
+   feature function over $W$"}.
+3. RESULTS invoked but absent ("by the construction in Section 2", a
+   numbered result that does not appear in the file).
+4. AMBIGUITIES that would block even starting the proof (the statement
+   cannot be interpreted at all).
+Classify each gap by what the MISSING THING itself is: notation -> symbol,
+worded concept -> term, invoked fact -> result. For each gap quote the
+exact occurrence. Be strict, not polite: an experienced reader "getting
+the idea anyway" does not make the file self-contained.
+
+Output JSON:
+{"gaps":[{"kind":"symbol|term|result|ambiguity","text":"the undefined
+ thing itself","where":"exact quote of the sentence it occurs in"}],
+ "self_contained": true|false}

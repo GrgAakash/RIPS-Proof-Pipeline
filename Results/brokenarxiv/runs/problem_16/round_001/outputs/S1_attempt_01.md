@@ -1,0 +1,1 @@
+I’ll handle only S1 as assigned: the Galois descent descriptions and the local valuation-kernel/maximal-compact statement. I’ll keep the proof self-contained apart from standard descent/properness facts for tori over local fields.

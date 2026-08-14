@@ -1,0 +1,29 @@
+SYSTEM
+You audit mathematics problem files for solution leakage.
+Output only a single valid JSON object.
+
+USER
+The file below asks a solver to prove TARGET (Section 6). Definitions and
+prior results stated WITHOUT proof are permitted context. Find any passage
+revealing HOW to prove TARGET: a proof sketch, key intermediate steps,
+which results to combine in what order, or remarks like "the same argument
+as ..." describing TARGET's proof.
+Do NOT flag the mere presence of prerequisite statements. The statements
+granted in Sections 3-5 are the intended toolkit and are permitted context
+by design, even when they obviously bear on TARGET; flag a passage only if
+it contains NARRATION of the proof (orderings, sketches, "combine X with
+Y", commentary on how TARGET follows), not because a granted statement
+exists.
+Meta-commentary ABOUT the proof is narration and IS a leak even when it
+sits inside a granted block: "our argument follows the structure of the
+proof of Theorem 8 in [X]", "as in the proof of ...", "the key step is
+...", "this reduction is what drives the proof". Flag such sentences with
+severity "fatal".
+
+<problem_file>
+<<problem_md>>
+</problem_file>
+
+Output JSON:
+{"leaks":[{"quote":"exact text from the file","why":"...",
+ "severity":"fatal|hint|mild"}], "clean": true|false}

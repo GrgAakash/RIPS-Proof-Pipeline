@@ -1,0 +1,2 @@
+Problem 44:
+A dessin d'enfant is a connected bipartite graph embedded on a closed orientable surface, and its passport is a triple of partitions of the number of edges representing the degrees of black vertices, white vertices, and faces respectively. A uniform passport is a passport where each of the three partitions consists of equal parts. For every uniform passport of genus at least 2, there exists a dessin d'enfant with that passport that has a trivial automorphism group.

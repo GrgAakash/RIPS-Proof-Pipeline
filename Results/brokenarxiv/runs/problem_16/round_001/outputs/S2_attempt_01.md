@@ -1,0 +1,1 @@
+I’ll focus only on the assigned S2 step and keep it self-contained. The main technical point is whether the local valuation map from global points is actually surjective for an arbitrary torus, so I’m checking that lemma carefully rather than assuming a class-number-type result.

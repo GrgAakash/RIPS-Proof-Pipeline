@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rips-proof-pipeline"
+version = "0.1.0"
+description = "Proof-oriented paper cleaner, S0-S6 solver, citation gate, and verifier cascade."
+requires-python = ">=3.9"
+readme = "README.md"
+dependencies = []
+
+[project.scripts]
+integrated-math-solver = "solver.cli:main"
+integrated-verifiers = "verifiers.cli:main"
+
+[project.optional-dependencies]
+api = ["openai>=1.40"]
+pipeline = [
+  "networkx>=3.2",
+  "openai>=1.40",
+  "pydantic>=2.6",
+  "pylatexenc>=2.10",
+  "pyyaml>=6.0",
+  "requests>=2.31",
+  "tenacity>=8.2",
+  "urllib3<2; python_version < '3.10'",
+]
+
+[tool.setuptools]
+py-modules = ["prompt_sync"]
+packages = ["solver", "citation", "verifiers"]
+
+[tool.setuptools.package-dir]
+solver = "Individual Pipeline/solver"
+citation = "Individual Pipeline/citation"
+verifiers = "Individual Pipeline/verifiers"
+
+[tool.setuptools.package-data]
+solver = ["prompts/**/*.md"]
+citation = ["prompts/*.md"]
+verifiers = ["*.md", "prompts/*.md"]
+
+[tool.setuptools.data-files]
+"Prompt Packet" = [
+  "Prompt Packet/README.md",
+  "Prompt Packet/Prompts.md",
+  "Prompt Packet/PromptsWithFullInternet.md",
+  "Prompt Packet/FlowChart.md",
+  "Prompt Packet/QnAforPrompts.md",
+]

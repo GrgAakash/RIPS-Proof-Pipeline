@@ -1,0 +1,1 @@
+I’ll stay within the prompt constraints: no external lookup, no files, no commands. I’m going to treat the missing SC3 formulas as a potential interface issue and only prove what can be rigorously reconstructed from the theorem statement and elementary geometry.

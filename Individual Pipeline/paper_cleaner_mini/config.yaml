@@ -1,0 +1,13 @@
+provider: openai               # openai | azure
+llm:
+  standard: { temperature: 0 }             # non-reasoning models only
+  reasoning: { reasoning_effort: high }    # low | medium | high (CLI --effort overrides)
+  # Reasoning tokens count toward max_completion_tokens; the call layer
+  # doubles the budget (up to 4x) on truncation, so these are floors.
+  max_output_tokens: { s2_author: 40000, s2_check: 30000, s2_repair: 40000,
+                       audit_pkg: 30000, audit_excl: 16000 }
+  structured_outputs: true     # response_format=json_schema hard constraint
+  validation_retries: 2
+  network_retries: 8           # 429s back off via retry-after
+  parallel: 2                  # whole-paper prompts: keep low for TPM
+  cache: true                  # per-call cache under runs/<id>/cache/

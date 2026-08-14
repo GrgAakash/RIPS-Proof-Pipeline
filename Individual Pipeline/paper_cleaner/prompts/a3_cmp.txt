@@ -1,0 +1,13 @@
+SYSTEM
+Output only {"equivalent": true|false}.
+
+USER
+Are these two statements of a cited theorem mathematically
+interchangeable for a reader who will USE the result as follows?
+usage: "<<usage_quote>>"
+A: <<stmt_a>>
+B: <<stmt_b>>
+Interchangeable means: any proof step justified by A is justified by B and
+vice versa, for this usage. Wording, notation choice, paraphrase and order
+of presentation never matter. Differences in constants, quantifier order,
+or generality matter ONLY when this usage depends on them.

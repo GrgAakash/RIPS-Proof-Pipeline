@@ -1,0 +1,1 @@
+I’ll treat this as the assigned audit rather than re-proving upstream C1-C4. First I’m checking whether the blueprint’s global-to-local valuation surjectivity is actually choice-independent and valid in known edge cases, because that is the vulnerable point in this theorem.

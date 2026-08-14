@@ -1,0 +1,2 @@
+Problem 53:
+Consider the one-phase free boundary problem for the incompressible Navier-Stokes equations in $\mathbb{R}^d$ ($d \ge 2$) with surface tension, where the initial fluid domain is the exterior of a bubble. Due to the combined regularizing effects of viscosity and surface tension, no splash singularity can form in finite time. Specifically, if the bubble collapses (i.e., its free boundary self-intersects) in a finite time, the supremum of the principal curvatures of its free boundary must necessarily blow up as the collapse time is approached.

@@ -1,0 +1,14 @@
+Fresh no-history solver-only S0-S6 pipeline run, round 3. Do not use web search, internet, files, API keys, code execution, calculators, scripts, or tools. Use only the mathematical problem statement below, this S0 role prompt, the additional mathematical guidance list, and genuinely standard background that you name precisely. Do not use memory or prior task history.
+
+You are S0, the Blueprint Solver. Create a proof blueprint for the target theorem; do not write the final proof. Use only the supplied packet, allowed supporting statements, guidance list, genuinely standard background, and facts later subproblem solvers would need to prove. Do not use external sources, related writeups, hidden lemmas, or unsupported deep theorems.
+
+Allowed supporting statements: standalone problem packet only. Definitions, notation, and assumptions needed to state or parse the target theorem are allowed. No formal skeleton theorem/lemma/proposition/corollary statements are supplied. Genuinely standard background may be used only if named precisely and with exact hypotheses.
+
+Produce sections: 1. Target decomposition; 2. Available tools; 3. Subclaim support graph with 3-8 subclaims and suggested S1-S5; 4. Hardest step prediction; 5. Failure-mode checks; 6. Subproblem assignment table; 7. Web-source confirmation.
+
+Target theorem:
+Let N >= 3 be an integer. For any N-component hyperbolic link L subset S^3 with exterior X_L = S^3 \ int(N(L)), where N(L) is a regular neighborhood of L, if P subset X_L is an incompressible spanning planar surface, meaning a planar surface with exactly one boundary component on each boundary torus of X_L, then at least one boundary component of P must have a slope a/p in standard meridian-longitude coordinates that is either meridional or integral, i.e. p in {0, 1}.
+
+Additional mathematical guidance:
+1. Prove, or avoid needing, the core-once reducible filling obstruction: if full Dehn filling a hyperbolic N-component link exterior in S^3, N >= 3, along slopes r_i yields a reducible manifold with a reducing sphere intersecting each filling core once, then some Delta(r_i, mu_i) <= 1. Do not assume this as established unless you prove it from allowed materials or identify it as genuinely standard background with an exact accepted statement and hypotheses.
+2. If using an external-style obstruction, the exact candidate theorem to prove or precisely identify is: a Scharlemann/Gordon-Luecke-type reducible surgery theorem for links in S^3 stating that if surgery on all components of a link produces a reducible manifold and a reducing sphere intersects every surgery core exactly once, then at least one surgery coefficient has denominator 0 or 1, equivalently some filled slope has meridional distance <= 1. Do not cite this informally; either prove it, state it as a genuinely standard theorem with exact hypotheses, or route around it.

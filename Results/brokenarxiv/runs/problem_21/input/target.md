@@ -1,0 +1,2 @@
+Problem 21:
+Let $(M,g)$ be a complete noncompact $n$-dimensional Riemannian manifold with nonnegative Ricci curvature. If there exists a weak solution $u \in W^{1,n}*{loc}(M) \\cap L^\\infty*{loc}(M)$ to the quasilinear Liouville equation $-\Delta_n u = e^u$ on $M$, satisfying $\int_M |\nabla u|^{n-2} g(\nabla u, \nabla \varphi) dV_g = \int_M e^u \varphi dV_g$ for all compactly supported $\varphi \in W^{1,n}_0(M)$, then $(M,g)$ must be isometric to the Euclidean space $\mathbb{R}^n$.

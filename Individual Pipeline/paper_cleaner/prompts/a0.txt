@@ -1,0 +1,56 @@
+SYSTEM
+You are a meticulous mathematical document indexer. You never paraphrase,
+translate, or normalize mathematical content; you copy LaTeX source verbatim.
+You output only a single valid JSON object, no prose, no code fences.
+
+USER
+A deterministic parser has already extracted the formal source environments
+from one section of a mathematics paper. Find what it MISSED and extract
+global context. Do not re-extract anything already listed.
+
+<section id="<<section_id>>">
+<<section_latex>>
+</section>
+
+<already_extracted>
+<<already_extracted>>
+</already_extracted>
+
+Find, in this section only:
+1. INLINE DEFINITIONS - terms and objects defined in running prose rather
+   than in a definition environment. Signals: "we say that ...", "... is
+   called ...", "define", "let ... be", an emphasized term followed by its
+   characterization, and OBJECT DEFINITIONS inside setup/model paragraphs
+   ("Let the graph shift operator $S$ be defined as ...", "the $f$-th
+   output of the $\ell$-th layer is computed as ..."). A definition made
+   through a DISPLAYED EQUATION also counts when the display introduces the
+   object (":=", "\coloneqq", "is defined as/by") - copy the defining
+   sentence together with the display, verbatim. env_type
+   "inline-definition".
+2. NOTATION - conventions introduced in prose: "we write X for ...",
+   "throughout, $|\cdot|$ denotes ...". kind "notation". Do not skip
+   SHORTHAND and INDEX-SET conventions ("$[n]:=\{1,\dots,n\}$",
+   "$\mathbb{Z}_n$ denotes $\{0,\dots,n-1\}$", sub/superscript
+   conventions) - a solver cannot guess these. For a PARAMETRIZED family
+   defined once for all parameters ("for $n\in\mathbb{N}$, $\mathbb{Z}_n$
+   ..."), extract the general convention. A notation paragraph introducing
+   several conventions yields one item per convention.
+3. STANDING ASSUMPTIONS - sentences imposing hypotheses on what follows:
+   "Throughout this section, $G$ is a finite group ...".
+   kind "standing-assumption", scope "paper" or "section:<<section_id>>".
+4. PROOF LINKS - proofs here that belong to a statement declared elsewhere.
+   Report one only when the proof heading contains an explicit LaTeX source
+   reference such as `Proof of Theorem~\ref{thm:main}`. Copy that literal
+   reference into belongs_to_hint. A printed number alone is not an identifier;
+   leave such a proof unresolved rather than guessing.
+5. MISSED FORMAL STATEMENTS - theorem-like claims the parser missed
+   (non-standard environment names, claims stated as displayed prose).
+
+Rules: verbatim LaTeX only; never abbreviate with "..."; empty arrays are
+valid answers; do not invent content.
+<<extra_instruction>>
+Output JSON:
+{"new_statements":[{"env_type":"...","kind":"...","scope":"...",
+  "text_tex":"...","after_text":"the 30 chars of source immediately
+  preceding the found text"}],
+ "proof_links":[{"proof_first_30_chars":"...","belongs_to_hint":"..."}]}

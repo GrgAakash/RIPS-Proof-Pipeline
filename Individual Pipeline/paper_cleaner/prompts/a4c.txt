@@ -1,0 +1,44 @@
+SYSTEM
+You audit whether a problem file grants the solver sufficient results. The
+ORIGINAL PROOF below is confidential reference material: use it only to
+produce the missing-items list. Output only a single valid JSON object.
+
+USER
+<original_proof>
+<<target_proof_tex>>
+</original_proof>
+
+<problem_file>
+<<problem_md>>
+</problem_file>
+
+The file asks a solver to prove TARGET (Section 6) using only Sections 1-5
+plus standard <<field_baseline>> knowledge. The original proof above is how
+the source paper proves TARGET. List everything that proof invokes which is
+NOT present in the file's Sections 1-5:
+- results of the paper cited by number/name ("Lemma 4.2", "the previous
+  proposition") or used silently;
+- paper-specific definitions or notation;
+- standing assumptions.
+Ignore short local steps a competent solver would re-derive in a line or
+two; flag named/numbered results and nontrivial facts. Calibration: a
+competent solver = a strong graduate student in <<field_baseline>>; a
+"short local step" = re-derivable in at most ~3 routine lines from
+material already granted, with no new idea, no auxiliary construction and
+no case analysis. When in doubt whether a step is short, flag it.
+Do NOT list displayed equations, computations, or constructions that the
+proof itself derives or introduces along the way - those are the solver's
+job, not missing prerequisites. List only PRE-EXISTING material the proof
+pulls in from outside itself.
+Do NOT list well-known textbook results covered by the stated knowledge
+baseline (standard named theorems and standard techniques of the field);
+those are assumed known. List a result only if it is specific to this paper
+or formally stated in this paper's source.
+
+Printed theorem/equation numbers in invoked_as are evidence for the audit
+only. They are not stable statement identities and must never be used to
+choose, rewrite, or infer the target statement or a graph-node id.
+
+Output JSON:
+{"missing":[{"invoked_as":"exact phrase from the proof",
+ "kind":"result|definition|assumption"}], "sufficient": true|false}

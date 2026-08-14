@@ -1,0 +1,44 @@
+provider: openai               # openai | azure, see §11.3
+models:
+  # Two tiers: the reasoning tier for tasks that require deep mathematical reading, the standard tier for extraction/scanning tasks
+  a0: gpt-5.5                  # index backfill — upgraded to the audit tier: extraction completeness is the root of most downstream repairs (missed GSO/h_T/notation on 2510.03923); invalidates all a0 caches, papers re-index on next touch
+  a1: o4-mini                  # dependency extraction, the hardest in the whole pipeline → reasoning tier
+  a2: o4-mini                  # main theorem nomination (needs to read the intro to make a judgment) → reasoning tier
+  a3_ext: o4-mini              # external result statement → reasoning tier
+  a3_cmp: gpt-4.1              # external result comparison (uses the a4b-tier model)
+  a4a: o4-mini                 # self-containment check → reasoning tier
+  a4b: gpt-4.1                 # leakage scan (pattern-matching task, standard tier)
+  a4c: o4-mini                 # sufficiency check (against the original proof) → reasoning tier
+  a5: gpt-4.1                  # selection rationale writing (English human-readable document, prose quality takes priority)
+  a6: gpt-5.5                  # package repairer: audit-tier model, full paper in hand, fires only on would-be-excluded packages
+  a7: gpt-5.5                  # appeal judge: full-paper review of every would-be exclusion (option 2 — the audits kept finding false kills)
+llm:
+  standard: { temperature: 0 }
+  reasoning: { reasoning_effort: medium }   # low | medium | high
+  # Note: for the o-series, reasoning tokens count toward max_output_tokens, so leave enough headroom (§2.1)
+  max_output_tokens: { a0: 8000, a1: 10000, a2: 10000, a3_ext: 6000, a3_cmp: 1000, a4a: 8000, a4b: 4000, a4c: 8000, a5: 6000, a6: 24000, a7: 24000 }
+  structured_outputs: true     # response_format=json_schema hard constraint (§11.2); when off, falls back to prompt + validation
+  validation_retries: 2
+  network_retries: 8           # TPM 429s back off via retry-after, so allow plenty of retries
+  parallel: 8                  # asyncio semaphore; the throughput ceiling is determined by the account's TPM, blindly raising it only burns retries
+  cache: true
+pipeline:
+  granularity: main-only       # main-only | per-node
+  policies: [dep-closure]      # dep-closure | full-prior | minimal
+  max_main_theorems: 5
+  min_main_theorems: 5         # if consensus is insufficient, deterministically backfill by the signal ladder (if eligible is insufficient, take all)
+  hardest_theorems: 2          # the hardest theorems selected in addition to the main theorems (deterministic difficulty score, may overlap with mains)
+  max_verify_iters: 5   # 3 was the math-paper empirical value; ML-theory papers hit the cap while still repairing (verify_iter_cap events, 2510.03923)
+  repair_agent: true    # A6 repairer: last resort before excluding a package
+  final_gate: true      # ship gate: one audit-tier (a6 model) self-containment check on the final file; findings feed the repair loop
+  appeal: true          # A7 appeal court: full-paper review of every would-be exclusion; overturn ships, uphold stamps the record
+  min_proof_chars: 300
+  package_char_cap: 300000
+limits:
+  index_char_cap: 240000
+  stmt_trunc_chars: 600
+  section_chunk_chars: 120000
+ocr:
+  enabled: true
+  engine: nougat               # nougat | mineru
+  max_unparseable_rate: 0.10

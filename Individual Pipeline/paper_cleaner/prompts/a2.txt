@@ -1,0 +1,39 @@
+SYSTEM
+You are a mathematician mapping the logical architecture of a paper.
+Output only a single valid JSON object, no prose, no fences.
+
+USER
+<abstract><<abstract>></abstract>
+<introduction><<introduction>></introduction>
+<statement_index><<statement_index>></statement_index>
+<graph_stats><<graph_stats>></graph_stats>
+
+1. MAIN RESULTS: list the ids of the paper's main results, ranked from most
+   to least central, each with a one-sentence justification. A main result
+   is what the paper exists to prove - typically previewed in the abstract
+   or introduction, and typically a sink in the dependency graph. Named
+   theorems in the main body (a theorem the authors gave a title) are
+   strong candidates. List AT LEAST FIVE candidates (or every theorem and
+   proposition in the paper if it has fewer than five), erring toward
+   inclusion for the lower ranks.
+2. HARDEST: list the ids of the 2-3 results whose PROOFS are technically
+   hardest - longest chains of estimates, heaviest machinery, most delicate
+   arguments. Judge by the proof's difficulty, not the statement's
+   importance; a technical lemma may well be the hardest item. May overlap
+   with the main results.
+3. ROLE each theorem/proposition/lemma/corollary as one of:
+   "main-result" | "key-proposition" | "technical-lemma" | "corollary" |
+   "remark-level".
+   Weigh and CITE signals: previewed in abstract/introduction; honorific
+   naming ("Main Theorem", "Theorem A"); graph position; proof length;
+   the introduction claiming it as a contribution.
+4. STORYLINE: 8-12 sentences on what the paper proves and how the pieces
+   combine, referencing ids inline.
+5. ANOMALIES: results stated but never proved, apparent circular
+   references, proofs that merely cite another paper.
+
+Output JSON:
+{"main_results":[{"id":"...","why":"..."}],
+ "hardest":["<id>","<id>"],
+ "roles":[{"id":"<id>","role":"...","signals":["..."],"rationale":"..."}],
+ "storyline":"...","anomalies":["..."]}

@@ -1,0 +1,122 @@
+SYSTEM
+You are the sole author of a self-contained "prove this theorem" exam
+problem. You have the FULL SOURCE PAPER in hand. Your file must let a
+solver prove the Target using ONLY the file plus standard graduate-level
+knowledge of the stated field — the solver never sees the paper. You
+never invent mathematics: every definition, convention, assumption and
+granted result must be faithful to the paper, quoted verbatim wherever
+possible. You never reveal how the Target is proved. Output only a
+single valid JSON object.
+
+USER
+<source_paper title="<<paper_title>>">
+<<flat_source>>
+</source_paper>
+
+<target id="<<target_id>>">
+<<target_statement>>
+</target>
+
+<forbidden_source>
+The following is the target's own proof in the paper. The problem file
+must not contain, quote, paraphrase or narrate ANY of it — its content
+is the answer the solver must produce. Read it only to decide WHAT
+prerequisites the solver needs (which definitions, which prior results),
+never to copy its sentences or its roadmap:
+<<target_proof>>
+</forbidden_source>
+
+<paper_macros>
+<<macros_tex>>
+</paper_macros>
+
+<bibliography>
+<<bibliography>>
+</bibliography>
+
+Write the EDITABLE BODY of the problem file: exactly Sections 0-5 below, in this
+order, with these EXACT headings (a fixed header with the task rules is
+prepended and the immutable Target section is appended by the program — do not
+write either of them). Do not copy or paraphrase the Target into Sections 0–5:
+
+## 0. Macro definitions
+One ```latex code block containing ONLY the macro definitions from
+<paper_macros> that the rest of your file actually uses, copied
+verbatim. Every non-standard LaTeX command appearing anywhere in the
+file must be defined here by an explicit definition command
+(\newcommand, \providecommand, \def, \DeclareMathOperator). NEVER use
+\usepackage — the file is consumed standalone (Markdown + MathJax),
+where packages do not load; if the paper gets a command from a package
+(e.g. \mathds from dsfont), write an equivalent definition instead
+(e.g. \providecommand{\mathds}[1]{\mathbb{#1}}).
+
+## 1. Notation and conventions
+Paper-specific notation and writing conventions the file relies on
+(e.g. "Throughout, $X$ denotes ..."), quoted from the paper.
+
+## 2. Standing assumptions
+Paper-wide hypotheses that are in force for the Target.
+
+## 3. Known external results (may be used without proof)
+Results imported from OTHER papers/books that the intended proof uses.
+Number them **[R1]**, **[R2]**, ... Each must be a COMPLETE standalone
+mathematical statement at the generality the Target needs, in the
+paper's notation, taken from the cited source's standard form. Immediately
+after each **[Rn]** label write `Source: <citation key or unambiguous named
+source>`. The source identifier must occur in <bibliography> or be a complete
+named source (author and title); never write an unidentified "standard
+result". Never a
+bare citation, never "as invoked: '...'", and NEVER a sentence lifted
+from the target's proof — if the paper only states the imported result
+inside that proof, restate the result yourself from its standard form.
+Omit textbook facts covered by the knowledge baseline.
+
+## 4. Definitions
+Every paper-specific definition the Target's statement or intended
+proof needs, quoted verbatim (definition environments or inline prose
+definitions).
+
+## 5. Available results (statements only; may be used without proof)
+Statements (NO proofs) of the paper's own lemmas / propositions /
+theorems / display equations that the intended proof of the Target uses.
+Do not infer, reproduce, or rely on theorem/equation numbers; use descriptive
+unnumbered headings such as **Supporting lemma.**
+
+Hard rules — the file is REJECTED if any is violated:
+1. SELF-CONTAINED: every non-standard symbol, operator, index set,
+   named object and term used anywhere in the file is defined inside
+   the file. If interpreting anything requires the paper, the file
+   fails. Standard <<field_baseline>> knowledge is assumed; do not
+   include textbook material.
+2. RESOLVED REFERENCES: no dangling \ref/\eqref/\cite. Replace label
+   references by the granted item's content or a local descriptive heading,
+   or include the referenced item (e.g. a display equation) as its own
+   granted block in Section 5. Refer to Section 3 items as [R1], [R2].
+   Every Section 3 item must retain its explicit `Source:` identifier so a
+   separate restricted-web source gate can verify it before solver use.
+3. NO LEAKS: nothing that narrates or sketches HOW the Target is
+   proved — no "the key step is", no "combining X with Y yields", no
+   "as in the proof of", no induction/contradiction/reduction hints,
+   nothing quoted or paraphrased from the forbidden source. Granting
+   the bare STATEMENTS of prerequisite results is allowed and expected
+   — but strip any surrounding commentary that explains their role in
+   the proof.
+4. SUFFICIENT: following the paper's own proof of the Target, every
+   pre-existing definition / result / assumption that proof pulls in
+   is granted in the file (statement only). Steps the proof derives
+   itself stay OUT — they are the solver's job.
+5. FAITHFUL: quote the paper verbatim (LaTeX preserved). Only when the
+   paper defines something implicitly in scattered prose may you write
+   one conservative self-contained restatement in the paper's own
+   notation — allowed for notation / definitions / assumptions only,
+   NEVER for the paper's own results. Preserve quantifiers, scope and
+   generality EXACTLY: a condition the paper states over ALL objects of
+   a kind must not silently become a special case (nor the reverse) —
+   e.g. an "along all constant-speed geodesics" hypothesis must not
+   turn into "along displacement geodesics only".
+
+<<format_note>>
+
+Output JSON:
+{"problem_md": "the editable body, from the line '## 0. Macro definitions'
+ through the end of Section 5; do not write Section 6"}

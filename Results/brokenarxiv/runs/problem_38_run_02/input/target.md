@@ -1,0 +1,2 @@
+Problem 38:
+Let the space of lines in $\mathbb{R}^d$ be endowed with the natural topology (the quotient space obtained from the deleted product $\{(x,y) \in \mathbb{R}^d \times \mathbb{R}^d : x \neq y\}$ by considering $(x,y)$ and $(x',y')$ equivalent if they span the same line). For every integer $d \geq 1$ and every finite family of at least two pairwise disjoint open convex sets in $\mathbb{R}^d$, every connected component of the space of line transversals to this family is acyclic (i.e., has trivial reduced homology).

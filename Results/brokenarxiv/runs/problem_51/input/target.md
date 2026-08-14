@@ -1,0 +1,2 @@
+Problem 51:
+Let $P_4$ denote the path on $4$ vertices. Let $\chi_{\mathrm{S}}(n,e,P_4)$ denote the minimum, over all $n$-vertex graphs $G$ with exactly $e$ edges, of the minimum number of colors required to edge-color $G$ such that every copy of $P_4$ in $G$ is rainbow (i.e., all of its edges have distinct colors). Then for all $\epsilon>0$, there exists $c(\epsilon)>0$ such that for all sufficiently large $n$, $\chi_{\mathrm{S}}\left(n,\binom{n}{2}-\lfloor n^{2-\epsilon} \rfloor,P_4 \right)>c(\epsilon)n^{2}$.

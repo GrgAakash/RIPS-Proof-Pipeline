@@ -1,0 +1,2 @@
+Problem 32:
+Let $G$ be a finite cyclic group of order $p^n$, where $p$ is a prime and $n$ is a positive integer. Let $H$ be a subgroup of the automorphism group $\operatorname{Aut}(G)$, and let $\mathcal{S}(G, H)$ denote the orbit Schur ring over $G$ formed by the orbits of $H$. The Terwilliger algebra of the association scheme derived from $\mathcal{S}(G, H)$ is almost commutative if and only if $H$ is the trivial subgroup or $H = \operatorname{Aut}(G)$.

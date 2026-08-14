@@ -1,0 +1,2 @@
+Problem 14:
+For a graph $F$, let $h_F(n,q)$ be the minimum number of copies of $F$ (counted as subgraphs) in an $n$-vertex graph with $\mathrm{ex}(n,F)+q$ edges, where $\mathrm{ex}(n,F)$ is the maximum number of edges in an $n$-vertex $F$-free graph. Let $c(n,F)$ be the minimum number of copies of $F$ in a graph obtained by adding one edge to an extremal $n$-vertex $F$-free graph. If a graph $F$ contains at least one cycle, then $h_F(n,1) = c(n,F)$ for all sufficiently large integers $n$.

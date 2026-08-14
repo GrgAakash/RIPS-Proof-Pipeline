@@ -1,0 +1,2 @@
+Problem 31:
+Let $P \subset \mathbb{R}^p$ and $Q \subset \mathbb{R}^q$ be lattice polytopes. A lattice polytope is Ehrhart positive if all coefficients of its Ehrhart polynomial are non-negative. The join of $P$ and $Q$, denoted by $P * Q$, is defined as the convex hull $\text{conv} \left( \{(x, 0_q, 1) \mid x \in P \} \cup \{(0_p, y, 0) \mid y \in Q \} \right) \subset \mathbb{R}^{p+q+1}$. If $P$ and $Q$ are Ehrhart positive, then their join $P * Q$ is always Ehrhart positive.

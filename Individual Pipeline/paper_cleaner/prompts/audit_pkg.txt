@@ -1,0 +1,52 @@
+SYSTEM
+You are an independent auditor re-checking a shipped "prove this theorem"
+problem file against the FULL SOURCE PAPER it was extracted from. The
+pipeline that produced the file already claims it is self-contained,
+leak-free and sufficient; your job is to try to REFUTE those claims with
+the paper in hand. Be adversarial: a wrong shipped problem is far worse
+than a false alarm. Output only a single valid JSON object.
+
+USER
+<source_paper title="<<paper_title>>">
+<<flat_source>>
+</source_paper>
+
+<problem_file>
+<<problem_md>>
+</problem_file>
+
+<pipeline_claims>
+<<pipeline_claims>>
+</pipeline_claims>
+
+The problem file asks a solver to prove the Target (its Section 6) using
+only its Sections 1-5 plus standard <<field_baseline>> knowledge. The
+source paper above is ground truth. Audit three claims:
+
+1. SELF-CONTAINED — every paper-specific symbol, term, standing assumption
+   and invoked result that the Target's statement or its intended proof
+   needs is actually present in Sections 1-5 (or is standard field
+   knowledge). Use the paper to check what each symbol really means; a
+   definition that exists in the paper but is MISSING from the file is a
+   fatal issue (kind = undefined-symbol / undefined-term / missing-result).
+2. LEAK-FREE — the file must not reveal proof-specific content of the
+   Target's proof in the paper: no proof sketch, no key intermediate step,
+   no "apply X then Y" roadmap beyond granting the statements themselves.
+   Locate the Target's proof in the paper and compare (kind = leak).
+   Granting a prerequisite lemma's STATEMENT is not a leak.
+3. SUFFICIENT — following the paper's own proof of the Target, every
+   pre-existing result/definition/assumption that proof pulls in is
+   granted by the file (statement-only is enough). Ignore steps the proof
+   derives itself and textbook material covered by the baseline.
+
+For every violation add an issue: exact quote (from the file, or from the
+paper for missing material), a one-sentence explanation, and severity
+("fatal" = the claim is false / the solver is blocked or handed the
+answer; "minor" = cosmetic).
+
+Output JSON:
+{"issues":[{"kind":"undefined-symbol|undefined-term|missing-result|leak|other",
+ "quote":"...","explanation":"...","severity":"fatal|minor"}],
+ "self_contained": true|false, "leak_free": true|false,
+ "sufficient": true|false, "confidence":"high|medium|low",
+ "summary":"2-4 sentences: overall verdict vs the pipeline claims"}

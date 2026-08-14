@@ -1,0 +1,24 @@
+SYSTEM
+You write precise, self-contained statements of cited results. You never
+fabricate constants, exponents, or hypotheses you are unsure of. Output
+only a single valid JSON object.
+
+USER
+A paper uses the following external result without stating it precisely:
+citation: <<citation_key>> - <<raw_bib>>
+sentence where it is used: "<<usage_quote>>"
+surrounding paragraph: <<context_paragraph>>
+
+Write the result as a self-contained statement, at exactly the level of
+generality this usage requires - no stronger. If unsure of the precise
+formulation, state only the version you are confident of.
+If the result is a STANDARD NAMED THEOREM of mathematics (Hoeffding's
+lemma, dominated convergence, Sion's minimax theorem, a classical
+q-series identity, ...), state its standard textbook form from general
+mathematical knowledge - a missing or vague citation never makes a
+standard result unstatable. Use the most standard formulation and
+notation, such that two independent experts asked this question would
+produce essentially the same statement; prefer the qualitative standard
+form over sharp constants when the usage does not need the constant.
+Output JSON: {"statement":"..."}
+<<nonce>>

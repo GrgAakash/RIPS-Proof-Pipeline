@@ -1,0 +1,8 @@
+openai>=1.40
+pydantic>=2.6
+pyyaml>=6.0
+requests>=2.31
+urllib3<2; python_version < "3.10"
+pylatexenc>=2.10
+networkx>=3.2
+tenacity>=8.2
