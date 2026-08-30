@@ -9,6 +9,14 @@ This repository is the clean normal proof-reproduction system. Historical
 runs, cached papers, private proof material, and the experimental open-problem
 pipeline are intentionally kept elsewhere.
 
+## Project provenance
+
+This repository is a cleaned public release of the collaborative RIPS-LA 2026
+project sponsored by OpenAI. Development occurred in an earlier shared
+repository, so the commit history here does not represent the full team's
+contributions. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the complete project
+team and mentorship.
+
 ## Pipeline
 
 ```text
