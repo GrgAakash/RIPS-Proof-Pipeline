@@ -1,0 +1,23 @@
+name: Documentation correction
+description: Report unclear, outdated, inconsistent, or broken documentation.
+title: "[Docs] "
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page or file
+      description: Link to the page and section that needs attention.
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is unclear or incorrect?
+      description: Quote the smallest relevant passage and explain the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Suggested correction
+      description: Optional wording, evidence, or code location that would resolve it.

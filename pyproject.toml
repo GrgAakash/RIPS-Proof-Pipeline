@@ -47,5 +47,4 @@ verifiers = ["*.md", "prompts/*.md"]
   "Prompt Packet/Prompts.md",
   "Prompt Packet/PromptsWithFullInternet.md",
   "Prompt Packet/FlowChart.md",
-  "Prompt Packet/QnAforPrompts.md",
 ]

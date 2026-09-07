@@ -1,69 +1,104 @@
-# Prompt Packet
+# Prompt protocol
 
-This folder contains the human-readable prompt protocol for the RIPS proof-reconstruction workflow.
+This directory contains the human-readable specification for the RIPS
+proof-reconstruction workflow.
 
-The prompt packet is the specification for the agent roles and controller routing. Local paper inputs and run artifacts live under repository-level `Inputs/` and `Outputs/` and remain ignored by Git.
+## Start here
 
-## What This Protocol Does
+| Document | Role |
+|---|---|
+| [`FlowChart.md`](FlowChart.md) | Two-layer operational map: implemented runtime routes plus clearly marked manual/standalone protocol extensions |
+| [`Prompts.md`](Prompts.md) | Canonical role contracts for closed-book S0-S6 |
+| [`PromptsWithFullInternet.md`](PromptsWithFullInternet.md) | Canonical role contracts for source-supported S0-S6 |
 
-The workflow asks a proof-blind solver system to reconstruct a proof from a cleaned public skeleton, then routes the proposed proof artifact through independent verification roles before any final acceptance. The primary setup path now creates one target-scoped package with Paper Cleaner Mini, independently audits its exact hash, verifies every Section 3 external grant, and deterministically exports the solver inputs. The older full-paper manual skeleton path remains an explicit fallback.
+`FlowChart.md` answers **what runs next** and labels whether an edge is executed
+by the integrated Python runtime or belongs to the fuller manual protocol. The
+selected prompt packet answers **what each role sees and must return**. The
+terminal `state.json` status records what the integrated runtime actually did.
 
-The current protocol uses:
+## Protocol at a glance
 
-1. **Multi-solver system**: S0 creates a proof blueprint, S1-S5 solve assigned subclaims, and S6 composes the final candidate artifact `P_k`.
-2. **Problem Statement Verifier**: checks that `P_k`, and any verifier report that needs checking, addresses the exact target theorem.
-3. **Citation Generator**: uses restricted internet source checking to build a Source Ledger for the proof artifact.
-4. **Citation Verifier**: uses restricted internet source checking to verify the Source Ledger; A1/A2/A3 do not run until it returns `GOOD_TO_GO`.
-5. **Verifier A1/A2/A3**: three independent full-proof audits that check gaps, disallowed premises, scope coverage, and proof-skeleton coupling.
-6. **Composer A**: merges the three A reports into one controller-facing evidence report without inventing new mathematical evidence.
-7. **Verifier B**: identifies the single weakest point, or reports that no weakest point was found.
-8. **Verifier C**: adversarially tries to break the proof.
-9. **Decision Controller**: applies routing rules, guidance-budget rules, hard gates, and acceptance conditions.
-10. **Final Checker**: privileged gold-aware referee that runs only after the proof-blind cascade clears.
-11. **Prompt Assembler**: fills fixed prompt templates with the current target, allowed statements, guidance list, and proposed proof.
+| Stage | Responsibility | Internet policy |
+|---|---|---|
+| Paper Cleaner Steps 1–5 | Retrieve and index the whole paper, trace dependencies, and select source-backed target IDs | API-backed; full paper available to cleaner roles |
+| Paper Cleaner Mini | Build a target-scoped public packet from the source paper | API-backed; full paper available to cleaner roles |
+| Independent package audit | Recheck the exact package and frozen target hashes | no solver access |
+| Skeleton Source Generator/Verifier | Verify every Section 3 external grant | restricted source checking |
+| S0 | Create the blueprint and select one key solver | packet-dependent |
+| S1-S5 | Solve assigned proof obligations | packet-dependent |
+| S6 | Compose one candidate proof and source ledger | packet-dependent |
+| Problem Statement Verifier | Check that the artifact addresses the exact target | no browsing |
+| Citation Generator/Verifier | Build and validate the source ledger | restricted source checking |
+| A1/A2/A3 + Composer A | Independently audit the complete proof, then merge reports | no browsing |
+| Verifier B | Identify the single weakest point | no browsing |
+| Verifier C | Adversarially attempt to break the proof | no browsing |
+| Decision Controller | Apply deterministic routing, budgets, and stop rules | code, not an LLM role |
+| Coupling/provenance adjudication | Handle LOW-coupling paper-original cases in the full protocol | standalone verifier or human; not integrated into the S0-S6 runtime |
+| Controller Audit | Optionally check a persisted controller decision against the protocol | external/manual; no browsing |
+| Final Checker | Privileged gold-aware referee after the cascade clears, when private material is present | no browsing; isolated private input |
 
-## Folder Contents
+## Internet modes
 
-This folder is organized as:
+| Behavior | `Prompts.md` | `PromptsWithFullInternet.md` |
+|---|---:|---:|
+| S0-S6 hosted search | No | Yes |
+| Pre-solver Section 3 source gate | Restricted | Restricted |
+| Post-S6 citation gate | Restricted | Restricted |
+| A/B/C verifier browsing | No | No |
+| Final Checker browsing | No | No |
 
-```text
-Prompt Packet/
-  README.md
-  Prompts.md
-  PromptsWithFullInternet.md
-  FlowChart.md
-  QnAforPrompts.md
+Do not enable solver web search while loading `Prompts.md`, and do not describe
+`PromptsWithFullInternet.md` as closed-book.
+
+## Information boundaries
+
+- S0-S6 receive the exact target, public skeleton, allowed support, and counted
+  guidance—not the target's reference proof.
+- Current-round solver artifacts are not silently carried into later rounds.
+  Only one controller-approved guidance item crosses that boundary.
+- An accepted branch releases its statement, status, permission to use it, and
+  use location. Its proof body remains sealed until deterministic final
+  assembly.
+- Citation and verifier reports are controller-visible; they do not become an
+  uncounted solver hint channel.
+- When private material is present, the Final Checker sees privileged reference
+  material but not the A/B/C reports or controller opinion. Without that
+  material, the integrated runtime can report only `accepted_cascade_only`.
+
+These boundaries are part of the experimental contract, not editorial advice.
+
+## Principal artifacts
+
+S6 uses machine-readable markers so deterministic code can separate:
+
+- `candidate_final_proof.md`;
+- `source_ledger.md`;
+- `completion_checklist.md`;
+- `web_source_confirmation.md` when applicable.
+
+Accepted branch proofs are hash-checked and attached by
+`Individual Pipeline/solver/sealed_proofs.py` before citation and mathematical
+verification. The downstream roles receive the assembled `final_proof.md`.
+
+## Editing and synchronization
+
+Only the two canonical packets are edited by hand. The review-friendly files
+under component `prompts/` directories are generated views.
+
+From the repository root:
+
+```bash
+python prompt_sync.py --write
+python prompt_sync.py --check
 ```
 
-File roles:
+The check must report that all component views are current. Protocol changes
+should also be reflected in `FlowChart.md` and, when they affect user-facing
+behavior, the root and component READMEs.
 
-- `Prompts.md`: canonical full prompt packet and decision tree.
-- `PromptsWithFullInternet.md`: internet-enabled solver packet variant.
-- `FlowChart.md`: primary operational map of the protocol.
-- `QnAforPrompts.md`: design notes explaining why the protocol is structured this way.
+## Interpretation rule
 
-## Current Design Choices
-
-- Verifier A is a required three-run ensemble: A1, A2, and A3.
-- Paper Cleaner Mini is the primary target-specific setup path. Its exported
-  package is labeled `target_scoped_proof_informed`; it must not be described
-  as experimentally identical to the fallback full-paper proof-stripped
-  skeleton.
-- A Mini package reaches S0 only after a hash-matching independent audit and,
-  when Section 3 is nonempty, a restricted-web Skeleton Source Generator and
-  Skeleton Source Verifier return exact grant coverage and `GOOD_TO_GO`.
-- Deterministic export writes the native `target.md`, `skeleton.md`,
-  `allowed_support.md`, zero-byte `guidance.md`, optional `bibliography.bib`,
-  and `setup_manifest.json` contract. Gold proof and full source are omitted by
-  default and never enter S0-S6 prompts.
-- S0/S1-S5/S6 artifacts are current-round-only and are not carried into later Solver rounds except through one counted guidance item.
-- An accepted branch releases only an `E###` statement, independently verified status, permission to use it without reproof, and its use location as that counted item. Its proof body and branch history remain sealed from later Solvers. Deterministic final assembly hash-checks and attaches the full proof, including nested branch proofs transitively, before citation and A/B/C verification.
-- The Problem Statement Verifier, Citation Generator, and Citation Verifier run before the A/B/C cascade; the Citation Verifier must return `GOOD_TO_GO` before Verifier A1/A2/A3 run.
-- Citation Generator, Citation Verifier, and the pre-solver Skeleton Source gate are internet-enabled only for restricted source checking. `Prompts.md` keeps S0-S6 no-internet; `PromptsWithFullInternet.md` enables source-supported solver browsing. Verifier A/B/C remain no-internet in both modes.
-- Citation reports are controller-visible only and are not carried into later Solver rounds except through one counted guidance item.
-- Composer A merges A1/A2/A3 reports before the Decision Controller derives A's status.
-- Verifiers can see the existing mathematical guidance list, but they do not append guidance.
-- Guidance generation is centralized through the Decision Controller and Prompt Assembler.
-- Solver roles (S0/S1-S5/S6), Problem Statement Verifier, Citation Generator, Citation Verifier, Verifier A/B/C, and Final Checker are LLM roles.
-- Prompt assembly, logging, guidance-budget checks, and eventually Decision Controller routing should become deterministic code where possible.
-- S6 returns one response, but its prompt requires machine-readable markers (for example `<!-- BEGIN_SOURCE_LEDGER --> ... <!-- END_SOURCE_LEDGER -->`) around the Final proof, Source Ledger, Completion checklist, and Web-source confirmation sections. Deterministic code (`Individual Pipeline/solver/s6_artifacts.py`) splits the saved `S6.md` into `candidate_final_proof.md`, `source_ledger.md`, `completion_checklist.md`, and `web_source_confirmation.md`, falling back to the section headings for older outputs. `Individual Pipeline/solver/sealed_proofs.py` then produces `final_proof.md`; downstream citation and proof verifiers receive that assembled proof.
+A candidate proof, a proof that passed only part of the cascade, a
+cascade-accepted proof, and a private-checker-accepted proof are different
+outcomes. Report the terminal controller status and name the gates that
+actually ran.

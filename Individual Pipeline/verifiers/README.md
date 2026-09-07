@@ -1,25 +1,18 @@
-# Standalone Verifier Cascade
+# Standalone verifier cascade
 
-This package runs the isolated verifier sequence:
+This package runs the isolated mathematical review sequence used by the solver:
 
 ```text
-Verifier A1 + A2 + A3
-  -> Composer A
-  -> Verifier B
-  -> Verifier C
-  -> Final Checker gate or solver guidance
+A1 + A2 + A3 → Composer A → Verifier B → Verifier C
 ```
 
 It supports deterministic mocks, saved-report replay, individual API-backed
-stages, and a full API-backed cascade. It does not replace the full solver
-controller; integrated solver runs invoke the verifier stages in protocol order.
+stages, and a full API-backed cascade. It does not replace the integrated
+solver controller, exact-target gate, or citation gate.
 
-The canonical prompt packet is `../../Prompt Packet/Prompts.md`. Generated
-views for the Problem Statement Verifier, A/B/C, Composer A, and Final Checker
-live under this package's `prompts/` directory and are checked for drift by the
-offline tests.
+## Free mock run
 
-## Mock run
+From the repository root, after installation:
 
 ```bash
 python -m verifiers run-mock \
@@ -30,22 +23,50 @@ python -m verifiers run-mock \
   --skeleton-ref 'skeleton.tex#reflexivity'
 ```
 
-Artifacts default to `Outputs/verifier/`. Optional manual input files belong in
-`Inputs/verifier_input/`; both locations are local working surfaces.
+The mock exercises parsing, routing, and artifact creation. It does not verify
+an external mathematical claim.
 
-This location is used only when the verifier package is invoked directly. A
-full S0-S6 run stores its A1/A2/A3, Composer A, B, and C artifacts inside that
-run's `Outputs/<run-name>/solver/<problem-id>/round_NNN/` directory. The two
-locations do not feed into one another.
-
-## Offline tests
+## Command surface
 
 ```bash
-python -m unittest discover -s tests/verifier_pipeline -p 'test*.py'
+python -m verifiers --help
 ```
 
-## API operation
+| Command family | Purpose |
+|---|---|
+| `run-mock` | Deterministic offline scenarios |
+| `run-api-a-stage` | One A-stage review |
+| `run-api-composer-a` | Merge A1/A2/A3 evidence |
+| `run-api-b` / `run-api-c` | Focused weakest-point and adversarial checks |
+| `run-api-cascade` | Full standalone A/Composer/B/C sequence |
+| `parse-manual-run` | Parse saved manual reports without API calls |
 
-Set `OPENAI_API_KEY` in the environment and use `python -m verifiers --help`
-for the available stage and cascade commands. API calls are not required for
-the offline regression suite.
+Set `OPENAI_API_KEY` only for API-backed commands. The regression suite and
+mock clients do not require it.
+
+## Output locations
+
+Standalone runs default to:
+
+```text
+Outputs/verifier/<verifier-run-id>/
+```
+
+Integrated S0-S6 runs place the same role artifacts inside the corresponding
+round under `Outputs/<run-name>/solver/<problem-id>/round_NNN/`. The standalone
+and integrated directories do not feed into one another.
+
+See [`Outputs/README.md`](../../Outputs/README.md) for artifact interpretation.
+
+## Prompt ownership
+
+Canonical role text lives in the selected file under
+[`Prompt Packet/`](../../Prompt%20Packet/README.md). The files under `prompts/`
+are generated views checked for drift by the offline suite.
+
+## Interpretation boundary
+
+These verifiers are LLM-based critics, not independent formal proof kernels.
+Their reports are evidence for the deterministic controller. Report the exact
+terminal status and do not describe a partial or verifier-only result as a
+proved theorem.

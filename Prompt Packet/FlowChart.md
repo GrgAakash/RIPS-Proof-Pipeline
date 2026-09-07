@@ -1,84 +1,198 @@
-# PromptRIPS Pipeline Flowchart
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../docs/rips-proof-mark-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="../docs/rips-proof-mark.png">
+    <img src="../docs/rips-proof-mark.png" width="132" alt="RIPS Proof Pipeline project mark">
+  </picture>
+</p>
 
-This file is the operational map for the prompt protocol. It should be read alongside [Prompts.md](Prompts.md), which contains the exact prompt text and controller rules.
+<h1 align="center">PromptRIPS Protocol Flow</h1>
 
-The first diagram shows the live agent handoff order. The second diagram gives the detailed setup, routing, rerun, audit, and final-check flow.
+<p align="center">
+  <strong>Operational order, evidence gates, rerun paths, and terminal outcomes.</strong>
+</p>
 
-## Agent handoff map
+<p align="center">
+  <a href="../README.md">Project home</a> ·
+  <a href="README.md">Prompt protocol</a> ·
+  <a href="Prompts.md">No-internet packet</a> ·
+  <a href="PromptsWithFullInternet.md">Source-supported packet</a>
+</p>
 
-This is the quick "who goes first, and who receives the output" view for the live agent run.
-Setup, skeleton audit, and prompt assembly must already be done before this starts.
+[![RIPS Proof Pipeline overview](../docs/pipeline-overview.svg)](../README.md#how-the-pipeline-works)
+
+> 🧭 **Reading guide:** Start with the one-minute table, then open the
+> integrated-runtime map for the exact automated route. Dashed arrows in the
+> later diagrams are manual or standalone-protocol paths; the integrated
+> `solver/` runtime does not execute them automatically.
+
+## Protocol in one minute
+
+| Phase | What happens | Live implementation boundary |
+|---:|---|---|
+| **1. Prepare** | Paper Cleaner selects the target; Mini builds and audits the public packet; the Section 3 source gate runs when needed | arXiv wrappers prepare Steps 1-5; `run-cleaner-solver` starts from that prepared paper and enforces Mini/audit/source gates; hand-authored `run-open-problem` inputs bypass setup gates |
+| **2. Reconstruct** | S0 plans and selects one key solver; that solver must pass before the other four S1-S5 roles and S6 run | automated by `solver/orchestrator.py` |
+| **3. Validate sources** | Problem Statement Verifier checks the exact target; Citation Generator/Verifier check the source ledger | automated before mathematical verification |
+| **4. Review mathematics** | A1/A2/A3 review independently; Composer A merges; B finds the weakest point; C attacks it | automated with conservative human-review exits for malformed or contradictory reports |
+| **5. Decide** | The deterministic controller accepts, reruns, branches, requests human review, stops, or invokes the private Final Checker | public-only runs can reach `accepted_cascade_only`; private runs require Final Checker PASS for `accepted` |
+| **6. Extend or audit** | Coupling/provenance adjudication and Controller Audit remain available in the written protocol | coupling exists in the standalone verifier package; Controller Audit is external/manual, not invoked by the integrated runtime |
+
+### Authority boundary
+
+- [Prompts.md](Prompts.md) and
+  [PromptsWithFullInternet.md](PromptsWithFullInternet.md) define the role
+  contracts and full manual protocol.
+- `Individual Pipeline/solver/*.py` defines what the integrated command-line
+  runtime actually executes.
+- A persisted controller decision is **auditable**, but it is not
+  **independently audited** unless a separate Controller Audit is run.
+- The terminal `state.json` status and the gates that actually ran are the
+  authoritative result of an automated run.
+
+## Choose a view
+
+<details>
+<summary><strong>1. Integrated runtime map</strong> — exact automated order and exits</summary>
+
+This is the route executed by `python -m solver run-open-problem`. Setup gates
+are guaranteed only when the input bundle came through `run-cleaner-solver`.
 
 ```mermaid
 flowchart TD
-    classDef human fill:#f6f8fa,stroke:#8b949e,color:#24292f;
+    classDef input fill:#f6f8fa,stroke:#8b949e,color:#24292f;
     classDef agent fill:#eaf4ff,stroke:#4b8fd8,color:#0b2545;
     classDef verifier fill:#fff7e6,stroke:#d99000,color:#332000;
     classDef controller fill:#f1f8f4,stroke:#2da44e,color:#12361f;
     classDef decision fill:#ffffff,stroke:#8b949e,color:#24292f;
-    classDef output fill:#fdeeee,stroke:#d1242f,color:#3b0d0d;
+    classDef terminal fill:#fdeeee,stroke:#d1242f,color:#3b0d0d;
+    classDef record fill:#f6f8fa,stroke:#8b949e,color:#24292f,stroke-dasharray:4 3;
 
-    prereq["Prerequisites already done<br/>target chosen, exact-hash skeleton audit passed,<br/>Section 3 source gate passed or N/A"]:::human
-    s0["1A. S0 Blueprint<br/>plans subclaims"]:::agent
-    s15["1B. S1-S5<br/>solve assigned subclaims"]:::agent
-    s6["1C. S6 Composer<br/>writes composed P_k"]:::agent
-    psv["2. Problem Statement Verifier<br/>checks exact target alignment"]:::verifier
-    citeG["3A. Citation Generator<br/>creates Source Ledger<br/>(restricted internet)"]:::verifier
-    citeV["3B. Citation Verifier<br/>checks source hygiene<br/>(restricted internet)"]:::verifier
-    multiA["4A. Verifier A1/A2/A3<br/>parallel artifact reports<br/>(no internet)"]:::verifier
-    composerA["4B. Composer A<br/>merges A reports into gold A report"]:::verifier
-    controller1["5. Decision Controller<br/>derives A status and chooses next route"]:::controller
-    b["6. Verifier B<br/>find weakest point"]:::verifier
-    controller2["7. Decision Controller<br/>uses B result"]:::controller
-    c["8. Verifier C<br/>tries to break proof"]:::verifier
-    controller3["9. Decision Controller<br/>final accept/rerun/adjudicate decision"]:::controller
-    auditCtl["10. Controller Audit<br/>checks every controller outcome<br/>(runs last)"]:::controller
-    finalCheck["9b. Final Checker<br/>gold-aware, independent<br/>(no verifier reports)"]:::verifier
-    rejFinal(["Rejected at final check<br/>terminal, no rerun"]):::output
-    outcome{"Outcome"}:::decision
-    accepted(["Accepted / caveated accepted"]):::output
-    rerun["Append one guidance item"]:::output
-    rerunNoGuidance["Rerun without guidance item<br/>target/source-ledger repair"]:::output
-    assembler["Prompt Assembler<br/>updates packet for next round"]:::agent
-    restart["Next round starts again<br/>at S0"]:::output
-    manual["Human adjudication<br/>source hygiene, math gap,<br/>or coupling/provenance"]:::output
-    stopped(["Stopped / void / re-target"]):::output
+    inputs["Prepared or hand-authored<br/>solver inputs"]:::input
+    s0["S0 Blueprint<br/>selects key solver K"]:::agent
+    key["Run K first"]:::agent
+    keyGate{"K solved?"}:::decision
+    rest["Run remaining four<br/>S1-S5 solvers"]:::agent
+    s6["S6 Composer"]:::agent
+    complete{"Complete candidate?"}:::decision
+    assemble["Deterministic final assembly<br/>attach hash-checked branch proofs"]:::controller
 
-    prereq -.-> s0 --> s15 --> s6
-    s6 --> psv
-    psv -->|"target aligned"| citeG
-    psv -->|"target mismatch"| rerunNoGuidance
-    citeG -->|"PROCEED_TO_CITATION_VERIFIER"| citeV
-    citeG -->|"SOURCE_LEDGER_REPAIR_NEEDED"| rerunNoGuidance
-    citeG -->|"leakage risk"| manual
-    citeV -->|"GOOD_TO_GO"| multiA
-    citeV -->|"SOURCE_LEDGER_REPAIR_NEEDED"| rerunNoGuidance
-    citeV -->|"BLOCKING_SOURCE_ISSUE"| rerun
-    citeV -->|"LEAKAGE_RISK / UNCLEAR"| manual
-    multiA --> composerA --> controller1
-    controller1 -->|"A passes or no clear A item"| b
-    controller1 -->|"clear A issue"| rerun
-    b --> controller2
-    controller2 -->|"B clean enough or needs C"| c
-    controller2 -->|"clear B issue"| rerun
-    c --> controller3
-    controller3 --> outcome
-    outcome -->|"cascade clear"| finalCheck
-    finalCheck -->|"PASS"| accepted
-    finalCheck -->|"FAIL"| rejFinal
-    outcome --> rerun
-    outcome --> manual
-    outcome --> stopped
-    rerun --> assembler --> restart
-    rerunNoGuidance --> assembler
-    accepted -. audited .-> auditCtl
-    rejFinal -. audited .-> auditCtl
-    manual -. audited .-> auditCtl
-    stopped -. audited .-> auditCtl
-    restart -. audited .-> auditCtl
+    solverRoute{"Solver controller route"}:::decision
+    branch["Open bounded recursive branch"]:::controller
+    branchResult{"Branch result"}:::decision
+    reconsider["Reconsider failure pool<br/>without another branch"]:::controller
+
+    psv["Problem Statement Verifier"]:::verifier
+    target{"Exact target?"}:::decision
+    citeG["Citation Generator"]:::verifier
+    cgGate{"Generator result"}:::decision
+    citeV["Citation Verifier"]:::verifier
+    cvGate{"Citation gate"}:::decision
+    repair["Citation-only repair<br/>same proof and same H_k"]:::controller
+    attempts{"Attempts remain?"}:::decision
+    exhausted{"Prior no-guidance rerun<br/>already recorded?"}:::decision
+
+    runCascade{"Run A/B/C cascade?"}:::decision
+    skipGold{"Private gold proof present?"}:::decision
+    a["A1/A2/A3 in parallel"]:::verifier
+    composer["Composer A"]:::verifier
+    aGate{"Derived A route"}:::decision
+    b["Verifier B"]:::verifier
+    bGate{"Readable B route"}:::decision
+    c["Verifier C"]:::verifier
+    cGate{"Readable C route"}:::decision
+
+    private{"Private gold proof present?"}:::decision
+    finalCheck["Final Checker<br/>isolated and gold-aware"]:::verifier
+    finalGate{"Final Checker output"}:::decision
+    accepted(["accepted"]):::terminal
+    cascadeOnly(["accepted_cascade_only<br/>not privately checked"]):::terminal
+    rejected(["rejected_final_check<br/>terminal, no rerun"]):::terminal
+
+    guidance["Append exactly one<br/>counted guidance item"]:::controller
+    budget{"Guidance budget<br/>already exhausted?"}:::decision
+    retrySame["Rerun S0 with same H_k<br/>no guidance appended"]:::controller
+    roundLimit{"Maximum rounds reached<br/>before another round?"}:::decision
+    human["needs_human_review<br/>with adjudication kind"]:::terminal
+    stopped(["stopped_budget"]):::terminal
+    maxStopped(["stopped_max_rounds"]):::terminal
+    persisted["Controller decision and artifacts persisted<br/>auditable; not automatically audited"]:::record
+
+    inputs --> s0 --> key --> keyGate
+    s0 -->|"setup failure / leakage marker"| human
+    keyGate -->|"yes"| rest --> s6 --> complete
+    keyGate -->|"no"| solverRoute
+    complete -->|"no"| solverRoute
+    complete -->|"yes"| assemble --> psv --> target
+
+    solverRoute -->|"branch lemma"| branch --> branchResult
+    branchResult -->|"proved or conservatively disproved"| guidance
+    branchResult -->|"inconclusive"| reconsider --> solverRoute
+    solverRoute -->|"forbidden-route or ordinary-hint item"| guidance
+    solverRoute -->|"no usable item: first occurrence"| retrySame
+    solverRoute -->|"repeated no-useful result / setup issue"| human
+
+    target -->|"yes"| citeG --> cgGate
+    target -->|"no: first occurrence"| retrySame
+    target -->|"unclear or repeated no"| human
+    cgGate -->|"proceed"| citeV --> cvGate
+    cgGate -->|"ledger repair"| repair
+    cgGate -->|"leakage / unclear"| human
+    cvGate -->|"GOOD_TO_GO"| runCascade
+    runCascade -->|"yes"| a
+    runCascade -->|"no"| skipGold
+    skipGold -->|"yes"| finalCheck
+    skipGold -->|"no"| human
+    cvGate -->|"ledger repair"| repair
+    cvGate -->|"blocking issue + seed"| guidance
+    cvGate -->|"leakage / unclear / no seed"| human
+    repair --> attempts
+    attempts -->|"yes"| citeG
+    attempts -->|"no"| exhausted
+    exhausted -->|"no"| retrySame
+    exhausted -->|"yes"| human
+
+    a --> composer --> aGate
+    aGate -->|"VERIFIED / ALMOST"| b
+    aGate -->|"NOT VERIFIED / INVALID, no seed"| b
+    aGate -->|"blocking + one seed"| guidance
+    aGate -->|"no majority"| human
+    b --> bGate
+    bGate -->|"clean, readable, no disallowed premise"| c
+    bGate -->|"blocking + stated missing claim"| guidance
+    bGate -->|"contradictory / unreadable / no seed"| human
+    c --> cGate
+    cGate -->|"broke yes + failing point"| guidance
+    cGate -->|"broke no + A clear + no disallowed premise"| private
+    cGate -->|"unsure / unreadable / no failing point / disallowed / A blocked"| human
+
+    private -->|"no"| cascadeOnly
+    private -->|"yes"| finalCheck --> finalGate
+    finalGate -->|"PASS"| accepted
+    finalGate -->|"FAIL"| rejected
+    finalGate -->|"unparseable"| human
+
+    guidance --> budget
+    budget -->|"yes"| stopped
+    budget -->|"no"| roundLimit
+    retrySame --> roundLimit
+    roundLimit -->|"no"| s0
+    roundLimit -->|"yes"| maxStopped
+
+    accepted -.-> persisted
+    cascadeOnly -.-> persisted
+    rejected -.-> persisted
+    human -.-> persisted
+    stopped -.-> persisted
+    maxStopped -.-> persisted
 ```
 
-## Detailed protocol view including setup
+</details>
+
+<details>
+<summary><strong>2. Setup and branch detail</strong> — enforced and optional entry paths</summary>
+
+Solid arrows are enforced by the integrated wrapper or solver runtime. Dashed
+arrows are recommended manual safeguards or prompt-protocol operations.
 
 ```mermaid
 flowchart TD
@@ -87,195 +201,154 @@ flowchart TD
     classDef audit fill:#fff7e6,stroke:#d99000,color:#332000;
     classDef decision fill:#ffffff,stroke:#8b949e,color:#24292f;
     classDef guidance fill:#f1f8f4,stroke:#2da44e,color:#12361f;
-    classDef note fill:#fffaf0,stroke:#d0a85c,color:#3b2b00,stroke-dasharray:4 3;
+    classDef manual fill:#fffaf0,stroke:#d0a85c,color:#3b2b00,stroke-dasharray:4 3;
     classDef terminal fill:#fdeeee,stroke:#d1242f,color:#3b0d0d;
 
-    S1["STEP 1. Setup and hard gates<br/>Skeleton + target + tags + allowed statements + H_k"]:::step
-    paperInput["Primary input: arXiv ID or URL"]:::input
-    upstream["Paper Cleaner Steps 1-5<br/>download + flatten + index + select"]:::step
-    build["Primary: Paper Cleaner Mini<br/>target-scoped proof-informed package"]:::input
-    manualBuild["Fallback: manual full-paper<br/>proof-stripped skeleton"]:::input
-    audit["Independent skeleton audit<br/>exact SHA-256 hard gate"]:::audit
-    auditGate{"Self-contained, sufficient,<br/>leak-free, macro-clean,<br/>and hash-current?"}:::decision
-    voidAudit(["VOID<br/>missing/failed skeleton audit"]):::terminal
-    externalGate{"Section 3 contains<br/>external [Rn] grants?"}:::decision
-    sourceGate["Skeleton Source Generator + Verifier<br/>restricted internet"]:::audit
-    sourceStatus{"Every grant<br/>GOOD_TO_GO?"}:::decision
-    voidSource(["STOP BEFORE SOLVER<br/>source gate failed or unclear"]):::terminal
-    export["Deterministic export<br/>target.md + skeleton.md<br/>allowed_support.md + empty guidance.md"]:::input
-    inputs["Current run inputs ready"]:::input
+    entry{"Input route"}:::decision
+    paper["arXiv ID or URL"]:::input
+    upstream["Paper Cleaner Steps 1-5<br/>download, index, select"]:::step
+    mini["Paper Cleaner Mini<br/>target-scoped package"]:::step
+    audit["Independent package audit<br/>exact target and SHA-256"]:::audit
+    auditGate{"Audit passes?"}:::decision
+    sourceNeed{"External Section 3 grants?"}:::decision
+    source["Skeleton Source Generator<br/>and Verifier"]:::audit
+    sourceGate{"GOOD_TO_GO?"}:::decision
+    export["Deterministic solver bundle export"]:::step
+    hand["Hand-authored target.md<br/>and skeleton.md/.tex"]:::input
+    manualAudit["Recommended external audit<br/>not enforced by run-open-problem"]:::manual
+    stopSetup(["Stop before solver"]):::terminal
+    runtime["Integrated S0-S6 runtime"]:::step
 
-    S2["STEP 2. Prompt Assembler<br/>Fill fixed prompts with current inputs"]:::step
-    solverPacket["Ready multi-solver packets<br/>S0/S1-S5/S6"]:::input
-    verifierPacket["Ready Verifier packets<br/>include proposed proof P_k"]:::input
+    failure["Key solver or composed-proof failure"]:::input
+    priority{"Highest-priority usable finding"}:::decision
+    branchable{"Branch eligible and<br/>within depth/count/budget?"}:::decision
+    recursive["Run bounded recursive pipeline"]:::step
+    result{"Branch terminal result"}:::decision
+    proved["Accepted branch: seal proof body<br/>release E### statement only"]:::guidance
+    disproved["Conservatively disproved:<br/>release counted warning"]:::guidance
+    inconclusive["Reconsider parent failure pool<br/>with branching disabled"]:::guidance
+    parent["Append at most one item<br/>and restart parent at S0"]:::step
+    noItem{"Repeated no-guidance<br/>result?"}:::decision
+    retry["Restart parent at S0<br/>with unchanged H_k"]:::step
+    review(["needs_human_review"]):::terminal
 
-    S0["S0 Blueprint Solver<br/>fresh packet-selected mode"]:::step
-    S15["S1-S5 Subproblem Solvers<br/>fresh packet-selected mode"]:::step
-    S6["S6 Composer Solver<br/>fresh packet-selected mode<br/>produces composed P_k"]:::step
-    sealed["Accepted branch proof registry<br/>E### statement enters H_k<br/>proof body remains sealed"]:::note
-    finalAssembly["Deterministic final-only assembler<br/>hash-checks and attaches<br/>sealed branch proofs transitively"]:::step
+    entry -->|"recommended wrapper"| paper --> upstream --> mini --> audit --> auditGate
+    auditGate -->|"fail / stale / missing"| stopSetup
+    auditGate -->|"pass"| sourceNeed
+    sourceNeed -->|"no"| export
+    sourceNeed -->|"yes"| source --> sourceGate
+    sourceGate -->|"yes"| export --> runtime
+    sourceGate -->|"no / unclear / leakage"| stopSetup
 
-    PSV["STEP 3A. Problem Statement Verifier<br/>checks P_k solves exact target"]:::audit
-    PSVstatus{"Target aligned?"}:::decision
-    CG["STEP 3B. Citation Generator<br/>creates Source Ledger<br/>restricted internet"]:::audit
-    CGstatus{"Citation Generator result?"}:::decision
-    CV["STEP 3C. Citation Verifier<br/>checks Source Ledger<br/>restricted internet"]:::audit
-    CVstatus{"Citation gate?"}:::decision
-    targetRerun["Rerun multi-solver system<br/>with exact target<br/>same H_k, no guidance item"]:::guidance
-    citationRepair["Repair/rerun citation layer<br/>same H_k, no guidance item"]:::guidance
-    guidanceCitation["Use Citation Verifier guidance<br/>substantive source issue"]:::guidance
+    entry -->|"direct CLI"| hand --> runtime
+    paper -.->|"manual full-paper fallback"| hand
+    hand -.->|"recommended safeguard"| manualAudit
+    manualAudit -.->|"if accepted"| runtime
 
-    S4A["STEP 4A. Verifier A ensemble<br/>artifact-based reports"]:::step
-    ensembleA["A1/A2/A3 fresh chats<br/>same artifact-based A prompt"]:::audit
-    composer["Composer A<br/>gold A report<br/>reports only"]:::audit
-    Agold["Composer A gold report<br/>gaps + disallowed premises<br/>scope + allowed coupling"]:::note
-    Aderive["Decision Controller derives<br/>A status from Composer A"]:::guidance
-    Astatus{"Derived A status?"}:::decision
-    Amajority{"No majority<br/>in A ensemble?"}:::decision
-    Aitem{"One clear<br/>A guidance seed?"}:::decision
-    Aflag["A flagged issue<br/>no auto-accept"]:::note
-
-    S4BC["STEP 4B. Verifier B/C layer<br/>run when A passes or A has no clear seed"]:::step
-    VB["Verifier B<br/>weakest point"]:::audit
-    VBstatus{"B status?"}:::decision
-    VC["Verifier C<br/>break test"]:::audit
-    VCstatus{"C broke?"}:::decision
-
-    S5["STEP 5. Decision Controller<br/>apply hard gates, routing, and stopping rule"]:::step
-    hard["Hard gates checked first<br/>setup, audit, leakage, target mismatch,<br/>source-hygiene issue, web, disallowed premise"]:::note
-    coupling{"Paper-original<br/>and LOW allowed coupling?"}:::decision
-    acceptRule["Cascade clear: target aligned + Citation Generator no leakage<br/>+ Citation Verifier GOOD_TO_GO<br/>+ A no non-fillable gap/disallowed, scope full<br/>+ B no weakest point or fillable: yes + C broke: no<br/>+ audit passed + not low-coupling paper-original"]:::note
-    acceptGate{"Cascade clear?"}:::decision
-    finalChecker["Final Checker (LLM)<br/>gold-aware, no internet<br/>sees gold+source, NOT verifier reports"]:::audit
-    fcGate{"Final Checker?"}:::decision
-    accept(["ACCEPTED"]):::terminal
-    rejFinalD(["REJECTED at final check<br/>terminal, no rerun<br/>= cascade false-accept"]):::terminal
-    caveat["Coupling/provenance adjudication<br/>caveated accept, re-target, or void<br/>no guidance item"]:::guidance
-    acceptC(["ACCEPTED (caveated)<br/>low skeleton coupling, weak evidence"]):::terminal
-    retarget(["Re-target / re-tag / void"]):::terminal
-    hold["No auto-accept<br/>math-gap adjudication"]:::guidance
-    citationAdj["Source-hygiene adjudication<br/>do not proceed to Verifier A"]:::guidance
-    mathAdj["Math-gap adjudication<br/>pick one issue"]:::guidance
-    sameSolver["Rerun multi-solver system once unchanged<br/>restart at Step 3"]:::guidance
-    guidanceA["Use A guidance seed<br/>skip B/C"]:::guidance
-    guidanceB["Use B guidance<br/>skip C"]:::guidance
-    guidanceC["Use C guidance"]:::guidance
-    budget{"H_k already has 10?"}:::decision
-    stop(["STOP<br/>not reproduced within budget"]):::terminal
-    oneItem["Append exactly one guidance item"]:::guidance
-    log["Record controller log<br/>target/source gates + allowed-support difficulty<br/>citation internet use + leakage risk<br/>A1/A2/A3 + Composer + derived status<br/>coupling + decision + audit"]:::guidance
-    ctlAudit["Controller Audit<br/>checks every controller outcome<br/>accept / rerun / adjudication / void"]:::guidance
-    next(["Fresh multi-solver run<br/>with updated H_{k+1}<br/>restart at Step 2, then Step 3"]):::terminal
-
-    S1 --> paperInput --> upstream --> build --> audit
-    S1 --> manualBuild --> audit
-    audit --> auditGate
-    auditGate -->|"missing/fail"| voidAudit
-    auditGate -->|"pass"| externalGate
-    externalGate -->|"no"| export
-    externalGate -->|"yes"| sourceGate --> sourceStatus
-    sourceStatus -->|"no / unclear / leakage"| voidSource
-    sourceStatus -->|"GOOD_TO_GO"| export
-    export --> inputs
-
-    inputs --> S2 --> solverPacket --> S0 --> S15 --> S6 --> finalAssembly --> PSV
-    sealed --> finalAssembly
-    sealed -.->|statement-only counted guidance| S2
-    S2 --> verifierPacket
-
-    PSV --> PSVstatus
-    PSVstatus -->|"no / unclear blocking"| targetRerun
-    PSVstatus -->|"yes"| CG
-    CG --> CGstatus
-    CGstatus -->|"PROCEED_TO_CITATION_VERIFIER"| CV
-    CGstatus -->|"SOURCE_LEDGER_REPAIR_NEEDED"| citationRepair
-    CGstatus -->|"leakage risk"| citationAdj
-    CV --> CVstatus
-    CVstatus -->|"GOOD_TO_GO"| verifierPacket
-    verifierPacket --> S4A --> ensembleA --> composer --> Agold
-    CVstatus -->|"SOURCE_LEDGER_REPAIR_NEEDED"| citationRepair
-    CVstatus -->|"BLOCKING_SOURCE_ISSUE"| guidanceCitation
-    CVstatus -->|"LEAKAGE_RISK / UNCLEAR"| citationAdj
-    Agold --> Aderive --> Amajority
-
-    Amajority -->|"no majority"| mathAdj
-    Amajority -->|"majority holds"| Astatus
-    Astatus -->|"VERIFIED / ALMOST VERIFIED"| S4BC
-    Astatus -->|"NOT VERIFIED / INVALID"| Aitem
-    Aitem -->|"yes"| guidanceA
-    Aitem -->|"no"| Aflag --> S4BC
-
-    S4BC --> VB --> VBstatus
-    VBstatus -->|"weakest point + fillable: no, or disallowed premise"| guidanceB
-    VBstatus -->|"no weakest point / fillable: yes"| VC
-    VC --> VCstatus
-    VCstatus -->|"broke: yes"| guidanceC
-    VCstatus -->|"broke: unsure: choose issue"| mathAdj
-    VCstatus -->|"broke: unsure: rerun unchanged"| sameSolver
-    VCstatus -->|"broke: no"| S5
-
-    S5 --> hard --> coupling
-    Agold -.-> coupling
-    coupling -->|"yes"| caveat
-    caveat --> acceptC
-    caveat --> retarget
-    coupling -->|"no"| acceptRule --> acceptGate
-    Aflag -.-> acceptGate
-    acceptGate -->|"yes"| finalChecker --> fcGate
-    fcGate -->|"PASS"| accept
-    fcGate -->|"FAIL"| rejFinalD
-    acceptGate -->|"no"| hold
-    hold --> mathAdj
-
-    guidanceA --> budget
-    guidanceCitation --> budget
-    guidanceB --> budget
-    guidanceC --> budget
-    mathAdj --> budget
-    budget -->|"yes"| stop
-    budget -->|"no"| oneItem --> log --> next
-    targetRerun --> log
-    citationRepair --> log
-    citationAdj --> log
-
-    accept -. audited .-> ctlAudit
-    acceptC -. audited .-> ctlAudit
-    rejFinalD -. audited .-> ctlAudit
-    retarget -. audited .-> ctlAudit
-    stop -. audited .-> ctlAudit
-    next -. audited .-> ctlAudit
-    sameSolver -. audited .-> ctlAudit
-    targetRerun -. audited .-> ctlAudit
-    citationRepair -. audited .-> ctlAudit
-    citationAdj -. audited .-> ctlAudit
+    failure --> priority
+    priority -->|"forbidden-route item"| parent
+    priority -->|"branch lemma"| branchable
+    priority -->|"ordinary-hint item"| parent
+    priority -->|"no useful item"| noItem
+    branchable -->|"yes"| recursive --> result
+    result -->|"proved"| proved --> parent
+    result -->|"disproved"| disproved --> parent
+    result -->|"inconclusive"| inconclusive --> priority
+    branchable -->|"no: reconsider lower-priority findings"| inconclusive
+    noItem -->|"no"| retry --> runtime
+    noItem -->|"yes"| review
+    parent --> runtime
 ```
 
-## Selection rule when several verifiers propose an item
+</details>
 
-Only one item is appended per round. The Decision Controller picks it by:
+## Protocol-only extensions and guidance selection
+
+The next view deliberately separates paths that the integrated runtime executes
+from paths that still require the standalone verifier package or a human
+operator.
+
+<details>
+<summary><strong>3. Manual extensions and one-item policy</strong> — no hidden automation</summary>
 
 ```mermaid
 flowchart TD
-    classDef start fill:#f6f8fa,stroke:#8b949e,color:#24292f;
+    classDef runtime fill:#eaf4ff,stroke:#4b8fd8,color:#0b2545;
+    classDef manual fill:#fffaf0,stroke:#d0a85c,color:#3b2b00,stroke-dasharray:4 3;
     classDef decision fill:#ffffff,stroke:#8b949e,color:#24292f;
     classDef result fill:#f1f8f4,stroke:#2da44e,color:#12361f;
+    classDef terminal fill:#fdeeee,stroke:#d1242f,color:#3b0d0d;
 
-    s0["Candidate findings"] --> s1{"Any hard violation?<br/>source-hygiene issue / disallowed premise / omitted case / false step"}
-    s1 -->|"yes"| useHV["Use the hard violation"]
-    s1 -->|"no"| s2{"Any blocking finding?<br/>A non-fillable gap / B fillable: no / C broke: yes"}
-    s2 -->|"yes"| order["Pick by priority:<br/>Citation Verifier before A before B before C"]
-    s2 -->|"no"| none["No blocking finding<br/>no guidance item this round"]
+    cClear["A/B/C cascade clear"]:::runtime
+    routeMode{"Controller surface"}:::decision
+    finalMode["Private/gold decision<br/>then Final Checker when available"]:::runtime
+    coupling{"paper_original_result<br/>and LOW coupling?"}:::decision
+    couplingAdj["Coupling/provenance adjudication<br/>no mathematical guidance"]:::manual
+    caveat(["Caveated accept"]):::terminal
+    retag(["Re-target or re-tag"]):::terminal
+    void(["Void measurement"]):::terminal
 
-    class s0 start;
-    class s1,s2 decision;
-    class useHV,order,none result;
+    outcomes["Any persisted controller outcome"]:::runtime
+    audit["Optional external Controller Audit<br/>not invoked by integrated runtime"]:::manual
+
+    firstBlock["Integrated runtime:<br/>first blocking stage reached"]:::runtime
+    autoSeed{"One mechanically supported seed?"}:::decision
+    one["Append exactly one item"]:::result
+    human["Human adjudication"]:::manual
+    candidates["Findings available to human"]:::manual
+    hard{"Any hard violation?"}:::decision
+    blocking{"Any blocking finding?"}:::decision
+    chooseHard["Use hard violation"]:::result
+    chooseOrder["Tie order:<br/>Citation Verifier, A, B, C"]:::result
+    unchanged["No item; unchanged rerun<br/>only where protocol permits"]:::result
+
+    cClear --> routeMode
+    routeMode -->|"integrated runtime"| finalMode
+    routeMode -.->|"standalone verifier / manual protocol"| coupling
+    coupling -->|"yes"| couplingAdj
+    coupling -->|"no"| finalMode
+    couplingAdj --> caveat
+    couplingAdj --> retag
+    couplingAdj --> void
+
+    outcomes -.->|"if separately requested"| audit
+
+    firstBlock --> autoSeed
+    autoSeed -->|"yes"| one
+    autoSeed -->|"no or ambiguous"| human --> candidates
+    candidates --> hard
+    hard -->|"yes"| chooseHard
+    hard -->|"no"| blocking
+    blocking -->|"yes"| chooseOrder
+    blocking -->|"no"| unchanged
 ```
 
-## Notes
+</details>
 
-- Primary protocol map: this FlowChart.md file is the main operational view of the protocol.
-  The DECISION TREE block in Prompts.md is the synchronized textual companion for exact
-  acceptance and routing details; if they disagree, pause and reconcile them before running.
+## Operational invariants
+
+| Rule | Boundary that must remain true |
+|---|---|
+| **Fresh contexts** | Solver and verifier roles run in fresh temporary chats; only controller-approved counted guidance crosses rounds. |
+| **Key solver first** | S0 designates one key solver; the other four S1-S5 roles and S6 wait until it reports `solved`. |
+| **One-item state** | At most one guidance item is appended per ordinary rerun; target and citation repairs do not create mathematical guidance. |
+| **Citation-only repair** | Source-ledger repair retries the citation layer on the same proof and same `H_k` before any unchanged full solver rerun. |
+| **Sealed branch proofs** | Later solvers receive the accepted statement and permission, not the branch proof body; deterministic assembly releases the hash-checked proof only at the end. |
+| **Source before mathematics** | Target and citation/source gates clear before A1/A2/A3 run. |
+| **Controller owns outcomes** | Model roles report structured findings; deterministic routing and the recorded terminal status determine the workflow outcome. |
+| **Final Checker isolation** | When private material is present, the gold-aware Final Checker runs last without internet or verifier/controller opinions; FAIL is terminal and malformed output requires human review. |
+| **Public-only boundary** | Without private gold material, a clear cascade ends as `accepted_cascade_only`, never `accepted` or “privately checked.” |
+| **Audit semantics** | Runtime decisions are persisted for audit. Controller Audit and coupling/provenance adjudication are not automatic integrated-runtime stages. |
+
+<details>
+<summary><strong>Full protocol notes</strong> — implementation and interpretation rules</summary>
+
+### Full protocol notes
+
+- This file separates the integrated runtime from the fuller manual protocol. The DECISION TREE
+  block in Prompts.md remains the authority for manual role contracts; the integrated-runtime
+  map above follows the checked-in Python controller. Do not present a manual-only edge as an
+  automated stage.
 - Every Solver and Verifier run is a fresh temporary chat (Markovian); the only state carried
   forward into a later Solver prompt is the cumulative guidance list. S0, S1-S5, and S6 are
   internal current-round solver chats. Their blueprint/subproof/composition artifacts may be
@@ -287,9 +360,10 @@ flowchart TD
   deterministic code verifies the sealed proof hash and attaches the proof to the final artifact;
   nested accepted branch proofs are already included transitively. Missing or changed sealed
   artifacts stop before citation and proof verification.
-- The Solver system is S0 blueprint, S1-S5 subproblem solvers, and S6 composer; together they
-  produce the candidate proof. The final-only assembler then produces verifier-facing P_k by
-  attaching any sealed accepted-branch proofs.
+- The Solver system is S0 blueprint, S1-S5 subproblem solvers, and S6 composer. S0 designates
+  exactly one key solver in S1-S5; that solver runs first, and the other four plus S6 are skipped
+  when it does not report `solved`. After a complete S6 result, the final-only assembler produces
+  verifier-facing P_k by attaching any sealed accepted-branch proofs.
 - Paper Cleaner Mini is the primary setup path. It produces a
   `target_scoped_proof_informed` package, which is a stronger and more targeted input condition
   than the manual full-paper skeleton fallback. Deterministic code, not another LLM, maps its
@@ -303,9 +377,11 @@ flowchart TD
   source-supported internet mode. Verifier A/B/C remain no-internet in both modes. The Skeleton
   Source Generator/Verifier and post-proof Citation Generator/Verifier are restricted-internet
   source-checking roles.
-- The Problem Statement Verifier checks that the candidate artifact P_k, and any verifier/checker report
-  that needs checking, addresses the exact target theorem. A mismatch reruns the affected agent
-  with the exact target and does not append mathematical guidance.
+- The Problem Statement Verifier checks that candidate artifact P_k addresses the exact target.
+  In the integrated runtime, a clear first mismatch reruns S0-S6 unchanged; a repeated mismatch
+  or an `UNCLEAR` report requires human target-alignment review. No path appends mathematical
+  guidance for a target repair. The manual protocol may also apply this check to verifier or
+  checker reports.
 - Citation Generator creates a Source Ledger and Citation Verifier checks source hygiene before
   Verifier A runs. Both citation roles may use internet access only for source checking: common
   theorem names, standard background facts, textbook-level references, named inequalities,
@@ -313,14 +389,17 @@ flowchart TD
   actually standard. They must not search for the target theorem, target label, original target
   source, target proof, distinctive target phrases, or any original proof or solution.
 - Verifier A1/A2/A3 do not run until Citation Verifier returns GOOD_TO_GO and no citation-role
-  leakage risk is present. Source-ledger repair reruns the citation layer with the same H_k and
-  no new guidance item; a substantive source issue can become the one guidance item for the
-  next round.
+  leakage risk is present. Source-ledger repair first reruns the Citation Generator/Verifier layer
+  on the same proof and same H_k, up to the configured attempt limit. An exhausted first repair
+  result triggers an unchanged full solver rerun; a repeated no-guidance result requires human
+  source-hygiene review. A substantive source issue can become the one guidance item.
 - Citation Generator and Citation Verifier reports are controller-visible only. They are not
   passed to future Solver runs except through one explicitly counted standalone guidance item.
-- A recorded passing skeleton audit bound to the exact skeleton SHA-256 is a hard gate. Missing,
-  failed, or hash-stale audit results void the run before Solver scoring; this is not counted as
-  a proof failure. A nonempty Section 3 additionally requires a GOOD_TO_GO skeleton source gate.
+- A recorded passing skeleton audit bound to the exact skeleton SHA-256 is a hard gate for the
+  recommended `run-cleaner-solver` path. Missing, failed, or hash-stale audit results stop that
+  path before Solver scoring; a nonempty Section 3 additionally requires a GOOD_TO_GO source
+  gate. The lower-level `run-open-problem` command accepts hand-authored inputs and does not
+  enforce these setup records, so those inputs must not be described as cleaner-audited.
 - Run interpretation is a set of tags, not a single label. For example, a run can be both
   `protocol_validation` and `cited_prior_result`.
 - Run tags are fixed at setup before the Solver runs; they must not be edited based on verifier
@@ -333,20 +412,21 @@ flowchart TD
 - Verifier B and C are also field-based: B reports whether a weakest point was found plus
   `fillable: yes/no/not applicable`; C reports the attack plus `broke: yes/no/unsure`. Neither emits severity,
   seriousness, confidence, or a verdict word; the Decision Controller routes on fillable/broke.
-- The Final Checker is a privileged, gold-aware LLM referee that runs LAST, only after the
-  gold-blind A/B/C cascade is clear and no coupling override fires. It sees the gold proof and
-  source but NOT the verifier reports, Composer output, or controller opinion (independence;
-  this avoids calibration circularity), and runs with no internet at temperature 0. PASS =
-  ACCEPTED; FAIL = terminal rejection with explanation and NO rerun or guidance item. A
-  cascade-clear proof that FAILS the Final Checker is a logged false-accept of the A/B/C cascade.
+- The Final Checker is a privileged, gold-aware LLM referee that runs LAST when private gold
+  material is present. It sees the gold proof and source but NOT verifier reports, Composer
+  output, or controller opinion, and runs with no internet at temperature 0. PASS = `accepted`;
+  FAIL = terminal `rejected_final_check` with no rerun or guidance item; malformed output requires
+  human review. Without private gold, a clear cascade ends as `accepted_cascade_only`, which is
+  not a private correctness certification.
 - Composer A is required for the current Verifier A layer. It sees only the Verifier A reports, not the proof, skeleton,
   target theorem, or allowed supporting statements. It preserves every issue any A run flagged and
   surfaces disagreement instead of majority-voting problems away.
 - Disallowed skeleton citations are violations. They are recorded separately and do not count as
   positive proof-skeleton coupling.
-- Proof-skeleton coupling is computed from the allowed part of Verifier A's artifact report. For
-  paper-original targets, LOW allowed coupling routes to coupling/provenance adjudication even if
-  A/B/C otherwise pass.
+- The full prompt protocol and standalone verifier package can compute proof-skeleton coupling.
+  For paper-original targets, LOW allowed coupling routes there to coupling/provenance
+  adjudication even if A/B/C otherwise pass. The integrated S0-S6 runtime does not currently load
+  this metadata or execute that override; its diagram therefore marks the edge as non-automatic.
 - Coupling/provenance adjudication has exits only: caveated accept, re-target/re-tag, or void. It
   does not append mathematical guidance, because there is no math gap to fix and guidance toward a
   skeleton statement would steer the Solver.
@@ -356,16 +436,22 @@ flowchart TD
   heterogeneous verification. To affect acceptance, a different model or human checkpoint must run
   inside the verifier cascade with the same structured fields.
 - Solver chats see their assigned solver packet(s). Verifier chats see their verifier packet,
-  which also includes the proposed proof artifact P_k. They do not see the operating rules, decision tree, controller log,
-  paper metadata, or arXiv URL.
-- The accept/reject combination, the one-item selection, and the stopping rule live in the
-  external controller log, not in any Solver or Verifier prompt.
-- Controller Audit is a checking step for whether the Decision Controller followed the protocol.
-  In the long run, the Decision Controller should become deterministic code rather than an LLM
-  discretion layer.
+  which includes proposed proof artifact P_k and is therefore built only after final assembly.
+  The manual Prompt Assembler prepares ready-to-paste packets; the integrated runtime renders
+  those prompts dynamically. Verifiers do not see the operating rules, decision tree, controller
+  log, paper metadata, or arXiv URL.
+- The accept/reject combination, one-item selection, and stopping rule live in deterministic
+  controller code for integrated runs and in the external controller log for manual runs; they do
+  not live in any Solver or Verifier prompt.
+- Controller Audit is an optional independent check of whether the Decision Controller followed
+  the protocol. The integrated runtime persists every controller decision but does not invoke the
+  Controller Audit role. If that role is run externally, record its result without relabeling a
+  merely persisted decision as independently audited.
 - This chart shows the controller-level loop. The run log should still record the paper ID,
   target theorem, run tags, target scope, skeleton filenames and checksum, skeleton audit and
   pre-solver external-grant gate status,
   solver output, verifier outputs, Composer A output, derived A status, allowed coupling,
-  disallowed citations, Decision Controller outcome, Controller Audit result, web-source audit,
+  disallowed citations, Decision Controller outcome, Controller Audit result if separately run, web-source audit,
   acceptance decision, and any appended guidance item.
+
+</details>

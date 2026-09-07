@@ -1,96 +1,133 @@
-# Proof Pipeline
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/rips-proof-mark-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/rips-proof-mark.png">
+    <img src="docs/rips-proof-mark.png" width="360" alt="RIPS Proof Pipeline mark: a source document branches through a proof graph and converges on a checked result">
+  </picture>
+</p>
 
-A standalone, proof-oriented pipeline for reconstructing a theorem from a
-mathematical paper. It prepares an arXiv source, exports a solver-safe theorem
-packet, runs the S0-S6 proof workflow, checks citations, and routes the result
-through an isolated verifier cascade.
+<h1 align="center">RIPS Proof Pipeline</h1>
 
-This repository is the clean normal proof-reproduction system. Historical
-runs, cached papers, private proof material, and the experimental open-problem
-pipeline are intentionally kept elsewhere.
+<p align="center">
+  <strong>Source-grounded proof reconstruction and evidence packaging for mathematical research papers.</strong>
+</p>
 
-## Project provenance
+<p align="center">
+  <img alt="Python 3.9 or newer" src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&amp;logoColor=white&amp;style=flat-square">
+  <a href=".github/workflows/ci.yml"><img alt="CI checks configured" src="https://img.shields.io/badge/CI-checks%20configured-2ea44f?style=flat-square"></a>
+  <img alt="Pipeline: S0 through S6" src="https://img.shields.io/badge/pipeline-S0%E2%80%93S6-0969da?style=flat-square">
+  <img alt="Status: research prototype" src="https://img.shields.io/badge/status-research%20prototype-d29922?style=flat-square">
+</p>
 
-This repository is a cleaned public release of the collaborative RIPS-LA 2026
-project sponsored by OpenAI. Development occurred in an earlier shared
-repository, so the commit history here does not represent the full team's
-contributions. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the complete project
-team and mentorship.
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#how-the-pipeline-works">Architecture</a> ·
+  <a href="#evidence-and-results">Results</a> ·
+  <a href="#documentation-map">Documentation</a> ·
+  <a href="#scope-and-claim-boundary">Limitations</a>
+</p>
 
-## Pipeline
+![RIPS Proof Pipeline: paper source passes through target preparation, S0-S6 proof reconstruction, evidence gates, and an optional private final check before becoming a reader-facing proof package.](docs/pipeline-overview.svg)
 
-```text
-paper source
-  -> paper cleaner and target selection
-  -> audited solver packet
-  -> S0 blueprint
-  -> S1-S5 proof modules
-  -> S6 candidate proof
-  -> Problem Statement Verifier
-  -> citation gate
-  -> Verifier A1/A2/A3 -> Composer A -> Verifier B -> Verifier C
-  -> optional private Final Checker
-  -> reader-facing proof package
-```
+> [!IMPORTANT]
+> This is research software for reconstructing and auditing proofs of results
+> supplied by source papers. A generated artifact is not automatically a
+> verified proof. Candidate, cascade-accepted, and private-checker-accepted are
+> distinct terminal states recorded by the controller.
 
-The solver supports two prompt packets:
+## Why this project exists
 
-- `Prompt Packet/Prompts.md`: S0-S6 work without hosted web search.
-- `Prompt Packet/PromptsWithFullInternet.md`: S0-S6 may use hosted web search.
+A theorem rarely makes sense in isolation: its notation, assumptions, and
+dependencies are scattered across a paper, while its proof may appear directly
+beside it. This pipeline turns that situation into an auditable reconstruction
+task. It:
 
-In both modes, source validation and the post-proof citation gate may use
-restricted web search. A verifier acceptance is not automatically a private
-Final Checker acceptance; the terminal status records which gates actually ran.
+- extracts an exact, source-backed target statement;
+- builds a solver-safe packet containing permitted definitions and prior results;
+- coordinates an S0-S6 proof-reconstruction workflow;
+- checks target alignment and citations before mathematical verification;
+- records exactly which gates ran and what evidence they produced.
 
-## Repository layout
+The intended users are researchers studying mathematical reasoning, proof
+reconstruction, LLM-agent protocols, and reproducible evaluation—not users
+seeking an automatic theorem prover or a substitute for expert review.
 
-```text
-Individual Pipeline/    implementation components grouped in one container
-  solver/               S0-S6 orchestration, branching, and proof assembly
-  citation/             post-S6 Citation Generator and Citation Verifier gate
-  verifiers/            isolated A1/A2/A3, Composer A, B, and C tools
-  paper_cleaner/         upstream arXiv preparation and target selection
-  paper_cleaner_mini/    one-target cleaner, repair, and audit workflow
-Prompt Packet/           canonical role prompts and workflow map
-Commands/                reusable shell entry points
-tests/                   offline solver and verifier regression tests
-Inputs/                  local generated inputs; ignored by Git
-Outputs/                 local run artifacts; ignored by Git
-run_pipeline.py          integrated cleaner-to-solver entry point
-```
+## Quick start
 
-The canonical packets are the only prompt files edited by hand. Generated
-role-specific views live under `Individual Pipeline/solver/prompts/`,
-`Individual Pipeline/citation/prompts/`, and
-`Individual Pipeline/verifiers/prompts/`. The standalone verifier utility
-loads its generated views at runtime; the integrated pipeline loads the
-selected canonical packet. After changing a canonical packet, run:
+### 1. Install the editable research package
+
+Python 3.9 or newer is declared in `pyproject.toml`.
 
 ```bash
-python prompt_sync.py --write
-python prompt_sync.py --check
-```
-
-## Install
-
-Python 3.9 or newer is required.
-
-```bash
+git clone https://github.com/GrgAakash/RIPS-Proof-Pipeline.git
+cd RIPS-Proof-Pipeline
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e '.[pipeline]'
 ```
 
-Keep `OPENAI_API_KEY` in the environment. Never place credentials, private
-papers, or private proofs in tracked files.
+### 2. Run a free offline verifier demo
 
-### API key resolution
+This exercises the standalone verifier cascade without an API key or paid
+model call:
 
-An explicit `--api-key` wins. Otherwise the CLI checks the name supplied by
-`--api-key-env`, then `DEEPSEEK_API_KEY`, then `OPENAI_API_KEY`, and finally
-the ignored local `API_key.md` compatibility file. Environment variables are
-preferred; keys are never written into run configuration artifacts.
+```bash
+python -m verifiers run-mock \
+  --scenario clean \
+  --target-theorem 'For every integer n, n = n.' \
+  --allowed-supporting-statements 'Equality reflexivity is allowed.' \
+  --proof-artifact 'For every integer n, n = n by equality reflexivity.' \
+  --skeleton-ref 'skeleton.tex#reflexivity'
+```
+
+Artifacts are written under `Outputs/verifier/`, which is ignored by Git.
+
+### 3. Run the offline regression suite
+
+```bash
+PYTHONPATH='Individual Pipeline' \
+  python -m unittest discover -s tests -p 'test*.py'
+```
+
+The suite does not call paid APIs. Install `.[pipeline]` first: without the
+cleaner dependencies, the entire target-integrity test module is skipped.
+
+## How the pipeline works
+
+| Phase | Responsibility | Principal artifact |
+|---|---|---|
+| Prepare — Paper Cleaner Steps 1–5 | Fetch and parse the whole paper; select an exact target | source-backed target record |
+| Package — Paper Cleaner Mini | Assemble and audit the context allowed for that one target | audited theorem packet |
+| Reconstruct | S0 plans, S1-S5 solve modules, and S6 composes | candidate proof |
+| Validate | Check the target statement and cited sources | statement and citation reports |
+| Verify | Run A1/A2/A3, Composer A, Verifier B, and Verifier C | verifier evidence bundle |
+| Decide | Apply deterministic routing and, when enabled, a private gold-aware check | terminal controller status |
+
+The two cleaners run in sequence. Paper Cleaner determines **which theorem is
+being attempted and where it came from**; Mini determines **what the solver may
+use while attempting that frozen target**. The non-mini cleaner still contains
+legacy Steps 6–8, but the current integrated route switches to Mini after Step
+5. See the [side-by-side cleaner explanation](Individual%20Pipeline/paper_cleaner/README.md#paper-cleaner-versus-paper-cleaner-mini).
+
+Mini is **proof-informed preparation**: its authoring roles can read the source
+proof when choosing prerequisites. The exported solver packet is checked for
+leakage, but this is not a proof-blind input-selection procedure.
+
+Two canonical solver packets are provided:
+
+- [`Prompt Packet/Prompts.md`](Prompt%20Packet/Prompts.md): S0-S6 operate
+  without hosted web search.
+- [`Prompt Packet/PromptsWithFullInternet.md`](Prompt%20Packet/PromptsWithFullInternet.md):
+  S0-S6 may use hosted web search.
+
+In both modes, the pre-solver source gate and post-proof citation gate may use
+restricted source checking. Proof verifiers and the private Final Checker do
+not browse.
+
+For the detailed protocol, start with the
+[`Prompt Packet` guide](Prompt%20Packet/README.md) and
+[`FlowChart.md`](Prompt%20Packet/FlowChart.md).
 
 ## Use with Codex subagents
 
@@ -136,21 +173,28 @@ files. The repository does not currently expose Codex subagents as an alternate
 backend for its internal model calls; `--solver-workers` controls the runtime's
 own parallel S1-S5 API calls.
 
-## Prepare a paper
+## Run a paper through the pipeline
+
+API-backed runs incur model usage. Keep credentials in environment variables;
+never place them in tracked files.
+
+### Prepare the source and choose a target
 
 ```bash
 export OPENAI_API_KEY='...'
 ARXIV=2606.16585 ./Commands/prepare_paper_input.sh
 ```
 
-The prepared paper is written to `Inputs/paper_cleaner_input/<paper-id>/`.
-Inspect its `roles/selection.json`, then select one opaque target identifier
-(`stmt-...`). These IDs are source-backed and intentionally do not contain a
-possibly misparsed theorem number.
+The prepared paper appears under
+`Inputs/paper_cleaner_input/<paper-id>/`. Inspect
+`roles/selection.json` and choose one opaque `stmt-...` target identifier.
+These identifiers are bound to source evidence rather than inferred theorem
+numbers.
 
-## Run the full pipeline
+The `stmt-a83f71c209d4` ID below is illustrative: replace it with an ID from
+your paper's `selection.json` before running either command.
 
-Closed-book S0-S6 run:
+### Closed-book S0-S6
 
 ```bash
 PAPER_ID=2606.16585 \
@@ -159,7 +203,7 @@ RUN_NAME=2606.16585_stmt-a83f71c209d4_no_internet \
   ./Commands/run_no_internet.sh
 ```
 
-Internet-enabled S0-S6 run:
+### Source-supported S0-S6
 
 ```bash
 PAPER_ID=2606.16585 \
@@ -168,49 +212,29 @@ RUN_NAME=2606.16585_stmt-a83f71c209d4_full_internet \
   ./Commands/run_full_internet.sh
 ```
 
-Common overrides include `MODEL`, `SOLVER_WORKERS`, `MAX_ROUNDS`,
-`MAX_BRANCH_DEPTH`, `MAX_BRANCHES`, `CITATION_MODEL`, and
-`CITATION_MAX_ATTEMPTS`. See [Commands/README.md](Commands/README.md).
+The command wrappers enable the private Final Checker by default. That mode
+copies the selected target's gold proof and full paper source into an ignored
+local directory used only by the final role. Set
+`INCLUDE_PRIVATE_FINAL_CHECKER=0` to keep the run public-only and allow, at
+most, a cascade-only acceptance status.
 
-The shipped run scripts enable the private Final Checker by default. This
-copies the selected target's gold proof and full paper source into the ignored
-`Inputs/solver_input/<run-name>/solver_input/private/` directory. Set
-`INCLUDE_PRIVATE_FINAL_CHECKER=0` to omit that material and finish with a
-cascade-only status when the public verifier cascade clears.
+See [`Commands/README.md`](Commands/README.md) for the command matrix,
+environment variables, defaults, and cost boundary.
 
-## Run only the solver pipeline
+## Run a hand-authored solver packet
 
-To skip both cleaners and supply an existing theorem packet directly, create a
-directory under `Inputs/solver_input/`. A practical input packet is:
+To skip both cleaners, create a directory under `Inputs/solver_input/`:
 
 ```text
 Inputs/solver_input/my_problem/
   target.md             exact theorem to prove
   skeleton.md           public definitions, assumptions, and granted results
-  allowed_support.md     explicit boundary on premises the solver may use
-  guidance.md            optional; one prior guidance item per non-empty line
-  bibliography.bib       optional; needed when the packet uses cited sources
+  allowed_support.md     explicit boundary on permitted premises
+  guidance.md            optional; one guidance item per non-empty line
+  bibliography.bib       optional; used by the citation gate
 ```
 
-`target.md` must contain the exact target, without a proof or a stronger
-replacement. `skeleton.md` should use Sections 0-5 of the cleaner format:
-
-```text
-## 0. Macro definitions
-## 1. Notation and conventions
-## 2. Standing assumptions
-## 3. Known external results (may be used without proof)
-## 4. Definitions
-## 5. Available results (statements only; may be used without proof)
-```
-
-State imported results completely, identify their sources, and include only
-statements that may be used without proof. Do not include the target's proof,
-proof outline, or result equivalent to or stronger than the target. See
-[Inputs/solver_input/README.md](Inputs/solver_input/README.md) for the complete
-file contract.
-
-Smoke-test the packet without paid API calls:
+Then perform a structural mock run:
 
 ```bash
 python -m solver run-open-problem \
@@ -223,101 +247,128 @@ python -m solver run-open-problem \
   --max-branches 0
 ```
 
-Then run the no-internet solver with a supported model:
+The mock checks loading and orchestration, not mathematical correctness or
+source provenance. The complete input contract is in
+[`Inputs/solver_input/README.md`](Inputs/solver_input/README.md).
 
-```bash
-export OPENAI_MODEL='your-supported-model'
-python -m solver run-open-problem \
-  --problem-dir Inputs/solver_input/my_problem \
-  --run-dir Outputs/solver_only \
-  --packet-file 'Prompt Packet/Prompts.md' \
-  --client openai \
-  --api-surface responses \
-  --model "$OPENAI_MODEL" \
-  --reasoning-effort high \
-  --solver-workers 5 \
-  --max-rounds 3 \
-  --progress
-```
+## Reading a run
 
-For source-supported solver browsing, select
-`Prompt Packet/PromptsWithFullInternet.md` and add `--web-search`. Do not mix
-`--web-search` with `Prompts.md`.
-
-The direct solver command still runs the Problem Statement Verifier, citation
-gate, and A/B/C cascade by default; it skips only the cleaner and package-audit
-stages. Add `--no-verifiers` only for debugging: the exact-target and citation
-gates still run, and the result cannot receive ordinary cascade acceptance.
-Because a hand-authored packet bypasses cleaner, independent package audit, and
-the pre-solver source gate, its terminal status covers only the stages that
-actually ran.
-
-## Find the result
-
-For `RUN_NAME=my_run`, inspect:
+For `RUN_NAME=my_run`, begin with:
 
 ```text
-Inputs/solver_input/my_run/       exact solver-ready input
-Outputs/my_run/cleaner/           cleaner and audit records
-Outputs/my_run/solver/            solver state and round artifacts
+Inputs/solver_input/my_run/solver_input/  exported solver-ready input
+Outputs/my_run/cleaner/           cleaner and audit evidence
+Outputs/my_run/solver/            solver state, rounds, and verifier evidence
 ```
 
-For a completed S6 proof, the round records `candidate_final_proof.md`,
-`final_proof.md`, `source_ledger.md`, and `problem_statement_verifier.md`. If
-the Problem Statement Verifier clears the target, it also records
-`citation_gate/`. Runs with accepted branch proofs also produce
-`PROOF_GUIDE.md`, `proof_registry.json`, and
-`proof_modules/`. `final_proof.tex` is produced only when S6 supplies a TeX
-artifact or the optional `pandoc` executable is available.
+Important round artifacts include:
 
-### Integrated versus standalone verifier output
+- `candidate_final_proof.md`: S6's proposed proof before final assembly;
+- `final_proof.md`: assembled proof used by downstream gates;
+- `problem_statement_verifier.md`: exact-target check;
+- `citation_gate/`: source ledger, reports, and citation decision;
+- `verifier_a1.md` through `verifier_c.md`: mathematical review chain;
+- `state.json`: terminal status and the gates actually reached.
 
-The repository has two verifier execution paths with separate output locations:
+Accepted branch proofs additionally produce `PROOF_GUIDE.md`,
+`proof_registry.json`, and `proof_modules/`. See
+[`Outputs/README.md`](Outputs/README.md) for the complete navigation guide.
 
-| Execution path | Started by | Verifier output location |
-|---|---|---|
-| Full S0-S6 pipeline | `Commands/run_no_internet.sh` or `Commands/run_full_internet.sh` | Inside `Outputs/<run-name>/solver/<problem-id>/round_NNN/` |
-| Standalone verifier utility | `python -m verifiers ...` | `Outputs/verifier/<verifier-run-id>/` by default |
+## Evidence and results
 
-`Outputs/verifier/` is not an extra stage of the full S0-S6 pipeline. It is an
-optional scratch location used only when A1/A2/A3, Composer A, B, and C are run
-independently for a mock, replay, or focused verifier check. The integrated
-pipeline does not read from that folder, and the folder may be absent until a
-standalone verifier command creates it.
+The repository includes the public
+[`BrokenArXiv S0-S6 artifact set`](Results/brokenarxiv/README.md): prompts and
+outputs for 43 selected solver-only runs from the June 2026 evaluation. These
+artifacts document model behavior and recorded usage; they are **not verified
+proofs**, because the citation gate, verifier cascade, and private Final Checker
+did not run in that evaluation.
 
-Ordinary inputs and outputs stay ignored. Only deliberately reviewed material
-belongs in `Outputs/publishable/`.
+The results README records the model, run dates, session counts, token
+telemetry, cost methodology, unequal round limits, directory layout, and the
+correct interpretation boundary.
 
-## Offline verification
+## Documentation map
 
-After installing the documented `.[pipeline]` dependencies, the bundled tests
-do not call paid APIs:
+| If you want to… | Start here |
+|---|---|
+| Understand the complete architecture | [`SOURCE_MAP.md`](SOURCE_MAP.md) |
+| Read the operational protocol | [`Prompt Packet/FlowChart.md`](Prompt%20Packet/FlowChart.md) |
+| Compare solver internet modes | [`Prompt Packet/README.md`](Prompt%20Packet/README.md) |
+| Prepare or run a paper | [`Commands/README.md`](Commands/README.md) |
+| Author a solver-only packet | [`Inputs/solver_input/README.md`](Inputs/solver_input/README.md) |
+| Interpret run artifacts | [`Outputs/README.md`](Outputs/README.md) |
+| Inspect cleaner internals | [`paper_cleaner/README.md`](Individual%20Pipeline/paper_cleaner/README.md) |
+| Inspect the target-scoped cleaner | [`paper_cleaner_mini/README.md`](Individual%20Pipeline/paper_cleaner_mini/README.md) |
+| Inspect the public benchmark export | [`Results/brokenarxiv/README.md`](Results/brokenarxiv/README.md) |
+| Contribute or report a problem | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+
+## Repository layout
+
+```text
+Individual Pipeline/     editable implementation components
+  paper_cleaner/         full-paper ingestion and target selection
+  paper_cleaner_mini/    target-scoped author/check/repair workflow
+  solver/                S0-S6 orchestration and deterministic routing
+  citation/              post-S6 citation generation and verification
+  verifiers/             isolated A1/A2/A3, Composer A, B, and C tools
+Prompt Packet/           canonical prompts and operational flowchart
+Commands/                stable shell entry points
+Inputs/                  ignored local input workspaces
+Outputs/                 ignored local run workspaces
+Results/                 deliberately reviewed public evaluation artifacts
+tests/                   offline regression suite
+docs/                    README presentation assets
+.github/                 CI and issue templates
+```
+
+Canonical prompt packets are edited by hand. Component-level prompt views are
+generated and checked for drift:
 
 ```bash
-PYTHONPATH='Individual Pipeline' python -m unittest discover -s tests -p 'test*.py'
+python prompt_sync.py --write
+python prompt_sync.py --check
 ```
 
-For a quick standalone verifier check:
+## Scope and claim boundary
 
-```bash
-python -m verifiers run-mock \
-  --scenario clean \
-  --target-theorem 'For every integer n, n = n.' \
-  --allowed-supporting-statements 'Equality reflexivity is allowed.' \
-  --proof-artifact 'For every integer n, n = n by equality reflexivity.' \
-  --skeleton-ref 'skeleton.tex#reflexivity'
-```
-
-This command writes to `Outputs/verifier/` by default. It does not modify or
-continue an integrated run under `Outputs/<run-name>/`.
-
-## Scope and safety
-
-- This repository reproduces proofs of results supplied by a source paper.
+- The pipeline reconstructs proofs of results supplied by source papers.
 - The experimental professor-supplied open-problem workflow is not included.
 - Generated outputs are evidence packages, not automatic publication claims.
-- Candidate, partial, verifier-accepted, and private-checker-accepted are
-  distinct statuses and must not be presented interchangeably.
-- API jobs are never required for offline tests and should be launched only
-  intentionally.
-- Do not commit generated inputs, raw runs, private gold material, or secrets.
+- A hand-authored solver packet bypasses cleaner and source-audit provenance.
+- The verifier cascade is model-based, not a formal proof-assistant kernel.
+- A private Final Checker compares against privileged reference material; its
+  output must not expose that material.
+- API-backed jobs should be launched intentionally after reviewing the model,
+  internet mode, private-data setting, and output location.
+
+## Project provenance and contributors
+
+This repository is a cleaned public release of the collaborative RIPS-LA 2026
+project sponsored by OpenAI. Development occurred in an earlier shared
+repository, so this repository's short commit history does not represent the
+full team's contributions. See [`CONTRIBUTORS.md`](CONTRIBUTORS.md) for the
+student team, mentorship, and final project report. Machine-readable citation
+metadata is available in [`CITATION.cff`](CITATION.cff).
+
+Questions and reproducible bug reports are welcome through GitHub Issues. When
+reporting a run, include the command, prompt mode, terminal status, and relevant
+artifact paths, but never attach API keys, private paper text, or gold proofs.
+
+## License
+
+No open-source license is currently declared. Until the project owners choose
+one, contact the maintainers before reusing or redistributing the code.
+
+<details>
+<summary><strong>Codex operator guidance</strong></summary>
+
+Use Codex around the checked-in Python runtime: bounded read-only agents may
+audit inputs and outputs, while the Python controller remains the authoritative
+orchestrator for S0-S6, persistence, routing, and verifier gates. Do not launch
+a duplicate solver round through a second orchestration layer.
+
+Before a paid run, record the exact command, model, solver internet mode,
+private Final Checker setting, and output directory. After the terminal state,
+audit both the controller status and the proof/citation/verifier artifacts.
+
+</details>

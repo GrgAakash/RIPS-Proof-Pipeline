@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using this metadata."
+title: "RIPS Proof Pipeline"
+type: software
+version: 0.1.0
+abstract: >-
+  A source-grounded pipeline for reconstructing and auditing mathematical
+  proofs from research papers, with explicit target, citation, verifier, and
+  provenance gates.
+authors:
+  - family-names: Kagalwala
+    given-names: Mitansh
+  - family-names: Altyyeva
+    given-names: Aziza
+  - family-names: Gurung
+    given-names: Aakash
+  - family-names: Wang
+    given-names: Zhida
+repository-code: "https://github.com/GrgAakash/RIPS-Proof-Pipeline"

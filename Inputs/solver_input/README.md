@@ -1,10 +1,15 @@
-# Solver Inputs
+# Solver input contract
 
-Each integrated run exports an audited public bundle here. Users who want to
-skip the cleaners may also create a hand-authored problem directory and pass it
-to `python -m solver run-open-problem`.
+Each integrated run exports an audited solver bundle under this workspace.
+Users may also create a hand-authored theorem packet and pass it to
+`python -m solver run-open-problem`.
 
-## Files
+> [!IMPORTANT]
+> A hand-authored packet bypasses cleaner provenance, independent package
+> audit, and the pre-solver source gate. Its terminal status covers only the
+> stages that actually ran.
+
+## Minimal packet
 
 ```text
 <problem-name>/
@@ -13,23 +18,24 @@ to `python -m solver run-open-problem`.
   allowed_support.md          # strongly recommended
   guidance.md                 # optional
   bibliography.bib            # optional; .bbl or .md also accepted
-  private/
-    gold_proof.md              # optional; Final Checker only
-    source.md                  # optional; Final Checker only
+  private/                     # optional; never commit
+    gold_proof.md
+    source.md
 ```
 
-`target.md` and one of `skeleton.md` or `skeleton.tex` are required. The
-directory name becomes the problem identifier used in the output path.
+Provide `target.md` and one public skeleton. If both skeleton filenames exist,
+the loader uses `skeleton.md` and ignores `skeleton.tex`. The directory name
+becomes the problem identifier in the output path; integrated exports use a
+nested directory named `solver_input`.
 
-### `target.md`
+## `target.md`
 
-Write the exact theorem statement, including all hypotheses, quantifiers, and
-scope. Do not paraphrase it, strengthen it, weaken it, or include its proof.
+Copy the exact theorem statement, including every hypothesis, quantifier, and
+scope condition. Do not paraphrase, strengthen, weaken, or include its proof.
 
-### `skeleton.md`
+## Public skeleton
 
-Provide the public information from which the proof may be reconstructed. For
-paper-reproduction work, use these headings in this order:
+For paper-reproduction work, use these headings in this order:
 
 ```text
 ## 0. Macro definitions
@@ -40,16 +46,21 @@ paper-reproduction work, use these headings in this order:
 ## 5. Available results (statements only; may be used without proof)
 ```
 
-The skeleton must be self-contained. Define paper-specific notation; state
-assumptions explicitly; give every imported result at the needed generality;
-and identify a source for every Section 3 result. Section 5 may contain only
-statements of earlier results. It must not contain the target proof, a proof
-outline, hidden hints derived from that proof, or a premise equivalent to or
-stronger than the target.
+The skeleton should define paper-specific notation, state assumptions, and give
+each permitted imported result at the required generality. Every Section 3
+grant needs an identifiable source. Section 5 may contain statements of prior
+in-paper results, never their proofs.
 
-### `allowed_support.md`
+Do not include:
 
-List exactly what may be used without proof. A useful structure is:
+- the target's proof or proof outline;
+- a premise equivalent to or stronger than the target;
+- hidden hints extracted from the reference proof;
+- an external result without enough information to source-check it.
+
+## `allowed_support.md`
+
+State the premise boundary explicitly. A useful pattern is:
 
 ```text
 Definitions, notation, conventions, and standing assumptions in Sections 1,
@@ -64,28 +75,25 @@ The target is not an allowed premise. No equivalent, stronger, or logically
 downstream statement may be used as a premise.
 ```
 
-If this file is absent, the prompt packet's default support rule applies. An
-explicit file is safer for a public or auditable run.
+If this file is absent, the selected prompt packet's default support rule
+applies. An explicit file is safer for a public or auditable run.
 
-### Optional files
+## Optional files
 
 - `guidance.md`: one complete guidance item per non-empty line. Leave it empty
-  for the first attempt. Guidance is solver-visible, so never place a gold-proof
-  excerpt or private verifier reasoning here.
-- `bibliography.bib`, `bibliography.bbl`, or `bibliography.md`: source records
-  used by the citation gate. Only the first matching filename is loaded.
-- `private/gold_proof.md` and `private/source.md`: enable the privileged Final
-  Checker. They are never intended for S0-S6 prompts. Keep them local and do
-  not commit them.
+  for the first attempt. Never put gold-proof text or private verifier reasoning
+  here.
+- `bibliography.bib`, `.bbl`, or `.md`: source records used by the citation
+  gate. Only the first recognized filename is loaded.
+- `private/gold_proof.md` and `private/source.md`: privileged Final Checker
+  inputs. They are isolated from S0-S6 and must remain untracked.
 
-An integrated cleaner export also contains `setup_manifest.json`, hashes, and
-source-gate records. These prove that its public packet passed the repository's
-setup gates. A hand-authored directory has no such provenance and must not be
-described as cleaner-audited or source-gated.
+Integrated cleaner exports also contain `setup_manifest.json`, file hashes,
+audit records, and source-gate evidence. Preserve those files with the packet.
 
-## Run
+## Validate without paid calls
 
-From the repository root, perform a free structural smoke test first:
+From the repository root:
 
 ```bash
 python -m solver run-open-problem \
@@ -98,7 +106,8 @@ python -m solver run-open-problem \
   --max-branches 0
 ```
 
-The mock confirms that the directory can be loaded and the orchestration can
-reach a terminal state; it does not validate the mathematics or source
-provenance. See the root `README.md` for real no-internet and
-source-supported commands.
+The mock confirms that the packet loads and the orchestrator reaches a terminal
+state. It does not validate the mathematics, citations, or source provenance.
+
+For real API-backed options, run `python -m solver run-open-problem --help` and
+read the [root workflow guide](../../README.md#run-a-hand-authored-solver-packet).

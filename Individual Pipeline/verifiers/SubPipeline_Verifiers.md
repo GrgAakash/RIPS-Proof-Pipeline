@@ -1,98 +1,99 @@
-# SubPipeline: Verifiers
+# Verifier cascade and handoffs
 
-This visual maps the standalone verifier subpipeline. It shows where the current verifier cascade ends and what the real next protocol step should be.
+The standalone verifier package checks one candidate and records a next-step
+handoff. **It does not execute a solver rerun or the private Final Checker.**
+The integrated solver controller performs its own routing; see the
+[full workflow](../../Prompt%20Packet/FlowChart.md).
+
+## Execution map
+
+At each routing node, the first matching condition in the table below wins.
+Only stages actually reached produce verifier reports.
 
 ```mermaid
-%%{init: {"theme": "base", "themeVariables": {"background": "#F6FBFF", "fontFamily": "Inter, Segoe UI, Arial", "fontSize": "24px", "primaryTextColor": "#F8FAFC", "primaryBorderColor": "#071A33", "lineColor": "#071A33", "edgeLabelBackground": "#F6FBFF"}, "flowchart": {"htmlLabels": false, "nodeSpacing": 52, "rankSpacing": 62, "curve": "basis", "padding": 20}}}%%
-flowchart TB
-    title["SubPipeline: Verifiers"]
-    input["Input proof package<br/>target + allowed statements + proof + skeleton_ref"]
+flowchart TD
+    input["Target, allowed support,<br/>candidate proof, skeleton reference"]
+    setup{"Required input fields present?"}
+    fix["Handoff: fix input"]
+    a["A1 / A2 / A3<br/>then Composer A"]
+    routeA{"A routing"}
+    b["Verifier B"]
+    routeB{"B routing"}
+    c["Verifier C"]
+    routeC{"C routing"}
+    web["Handoff: web-contamination review"]
+    rerun["Handoff: fresh solver run from S0<br/>with guidance"]
+    math["Handoff: math-gap adjudication"]
+    coupling{"paper_original_result tag<br/>and LOW coupling?"}
+    provenance["Handoff: coupling/provenance review"]
+    finalgate["Handoff: Final Checker gate<br/>not a private-checker result"]
+    saved["Persist summary.json<br/>and applicable guidance"]
 
-    ensemble["Verifier A ensemble<br/>A1 + A2 + A3 independent runs"]
-    composer["Composer A<br/>merges A reports only<br/>blind to proof, target, skeleton, allowed statements"]
-    acheck["A routing check<br/>disallowed premise / no majority / A status / guidance seed"]
+    input --> setup
+    setup -->|no| fix
+    setup -->|yes| a --> routeA
+    routeA -->|web issue| web
+    routeA -->|disallowed premise or eligible seed| rerun
+    routeA -->|no majority| math
+    routeA -->|otherwise| b --> routeB
+    routeB -->|web issue| web
+    routeB -->|disallowed premise or unfillable weakest point| rerun
+    routeB -->|otherwise| c --> routeC
+    routeC -->|web issue| web
+    routeC -->|broke yes| rerun
+    routeC -->|uncertain or A unresolved| math
+    routeC -->|broke no and A verified or almost| coupling
+    coupling -->|yes| provenance
+    coupling -->|no| finalgate
+    fix --> saved
+    web --> saved
+    rerun --> saved
+    math --> saved
+    provenance --> saved
+    finalgate --> saved
 
-    b["Verifier B<br/>single weakest point report<br/>weakest_point + source_status + missing_claim + fillable"]
-    bcheck["B routing check<br/>fillable + disallowed premise at weakest point"]
-    c["Verifier C<br/>adversarial break report<br/>attack + source_status + broke + failing/unsure field"]
-    ccheck["C routing check<br/>broke: yes / no / unsure"]
-
-    arerun["Rerun solver from S0<br/>source: A"]
-    aadj["Math-gap adjudication<br/>no majority or unresolved A"]
-    brerun["Rerun solver from S0<br/>source: B"]
-    crerun["Rerun solver from S0<br/>source: C"]
-    cadj["Math-gap adjudication<br/>C unsure or A unresolved"]
-    finalgate["Final Checker gate<br/>A/B/C cascade clear"]
-    artifacts["Saved run record<br/>prompt-shaped raw outputs<br/>parsed JSON with B/C fields<br/>summary.json"]
-
-    title --> input
-    input --> ensemble
-    ensemble --> composer
-    composer --> acheck
-
-    acheck -->|"disallowed premise<br/>or clear A guidance"| arerun
-    acheck -->|"no majority"| aadj
-    acheck -->|"A clear, or A issue<br/>without seed"| b
-
-    b --> bcheck
-    bcheck -->|"fillable: no<br/>or disallowed premise"| brerun
-    bcheck -->|"no weakest point<br/>or fillable: yes"| c
-
-    c --> ccheck
-    ccheck -->|"broke: yes"| crerun
-    ccheck -->|"broke: no + A clean"| finalgate
-    ccheck -->|"broke: unsure<br/>or unresolved A"| cadj
-
-    arerun --> artifacts
-    aadj --> artifacts
-    brerun --> artifacts
-    crerun --> artifacts
-    cadj --> artifacts
-    finalgate --> artifacts
-
-    classDef mono fill:#0B3B68,stroke:#071A33,stroke-width:3px,color:#F8FAFC;
-    class title,input,ensemble,composer,acheck,b,bcheck,c,ccheck,arerun,aadj,brerun,crerun,cadj,finalgate,artifacts mono;
-
-    linkStyle default stroke:#071A33,stroke-width:2.5px;
+    classDef stage fill:#eaf4ff,stroke:#4b8fd8,color:#0b2545;
+    classDef decision fill:#ffffff,stroke:#8b949e,color:#24292f;
+    classDef handoff fill:#fff7e6,stroke:#d99000,color:#332000;
+    classDef artifact fill:#f1f8f4,stroke:#2da44e,color:#12361f;
+    class a,b,c stage;
+    class setup,routeA,routeB,routeC,coupling decision;
+    class fix,web,rerun,math,provenance,finalgate handoff;
+    class input,saved artifact;
 ```
 
+## Routing conditions, in priority order
 
+| Stage | Conditions checked in order |
+|---|---|
+| Setup | Missing required fields → `FIX_INPUT_AND_RERUN`; otherwise start A. |
+| A / Composer A | Web issue → contamination review; disallowed premise → S0 handoff; no majority → math-gap review; `A_INVALID` or `A_NOT_VERIFIED` **with a clear seed** → S0 handoff; otherwise continue to B. |
+| B | Web issue → contamination review; disallowed premise, or a found weakest point with `fillable: no` → S0 handoff; otherwise continue to C. |
+| C | Web issue → contamination review; `broke: yes` → S0 handoff; `unsure` or an unrecognized value → math-gap review; `broke: no` with A neither verified nor almost → math-gap review; otherwise check coupling metadata. |
+| Coupling metadata | `paper_original_result` with `allowed_proof_skeleton_coupling: LOW` → provenance review; otherwise → `FINAL_CHECKER_GATE`. |
 
-## How To Read This Map
+These routes are implemented in [orchestrator.py](orchestrator.py). The
+[API cascade](api_smoke.py) uses the same routing helpers. Composer A merges
+the A reports without access to the target, proof, or skeleton.
 
-This is a map-style diagram. The curved arrows show which boxes correspond to which outcomes.
+## Read the handoff, not just the status
 
-`STOPPED_*` statuses in `summary.json` mean the current verifier cascade ended at that stage. They do not necessarily mean the whole experiment stopped forever.
-
-The real next move is recorded in:
+`STOPPED_*` describes the current verifier cascade, not necessarily the end of
+the enclosing experiment. Read these fields together:
 
 ```text
+status
 protocol_next_step
 rerun_starts_at
 current_cascade_action
 ```
 
-Examples:
+For example, `STOPPED_AFTER_B` with
+`protocol_next_step: FRESH_MULTI_SOLVER_RUN_FROM_S0` requests a solver rerun.
+It does not mean that a new round has already run.
 
-```json
-{
-  "status": "STOPPED_AFTER_B",
-  "protocol_action": "RERUN_SOLVER_WITH_GUIDANCE",
-  "protocol_source": "B",
-  "protocol_next_step": "FRESH_MULTI_SOLVER_RUN_FROM_S0",
-  "rerun_starts_at": "S0_BLUEPRINT",
-  "current_cascade_action": "END_CURRENT_VERIFIER_CASCADE"
-}
-```
-
-This means B ended the current verifier cascade, but the real next protocol step is a fresh solver rerun from S0.
-
-```json
-{
-  "status": "COMPLETED_C_CLEAN",
-  "protocol_next_step": "FINAL_CHECKER_GATE",
-  "current_cascade_action": "CASCADE_CLEAR"
-}
-```
-
-This means A/B/C cleared and the next real protocol step is the Final Checker gate.
+Likewise, `COMPLETED_C_CLEAN` alone is insufficient: an unresolved A result
+can still require math-gap review. Only a summary with
+`current_cascade_action: CASCADE_CLEAR` and
+`protocol_next_step: FINAL_CHECKER_GATE` records the clean handoff. Even that
+is **not** evidence that a private checker ran or accepted the proof.

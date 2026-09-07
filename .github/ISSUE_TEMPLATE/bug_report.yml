@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a reproducible pipeline, packaging, or verification failure.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide the smallest reproducible report. Do not attach API keys,
+        private gold proofs, restricted paper text, or privileged checker details.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction command
+      description: Include the command with secrets removed, prompt mode, and relevant settings.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: status
+    attributes:
+      label: Terminal status
+      description: Copy the exact status from state.json, if a run reached that point.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Python version, installation command, and model/client name.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Minimal logs or artifact paths
+      description: Include only the lines and paths needed to diagnose the failure.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials, private reference material, and restricted paper content.
+          required: true

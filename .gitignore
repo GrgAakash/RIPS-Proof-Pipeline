@@ -1,0 +1,35 @@
+# Local credentials
+API_key.md
+*.key
+.env
+.env.*
+!.env.example
+secrets.*
+
+# Python environments, caches, and build output
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Local scratch
+.tmp/
+*.log

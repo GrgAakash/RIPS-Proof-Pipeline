@@ -1,54 +1,86 @@
-# Solver Package
+# Solver
 
-This is the standalone S0-S6 mathematical solver. The package supports both
-`Prompts.md` (no hosted web search for S0-S6) and
-`PromptsWithFullInternet.md` (source-supported solver web search).
-In both modes, the sibling `../citation/` package runs restricted
-source-checking web search after S6 and blocks Verifier A until the Citation
-Verifier returns `GOOD_TO_GO`.
+This package implements the S0-S6 proof-reconstruction workflow, deterministic
+routing, branching, final proof assembly, and integration with citation and
+verification gates.
 
-## Entry and shared runtime
+## Entry points
 
-- `cli.py`: `run-open-problem`, `prepare-cleaner-problem`, and
-  `run-cleaner-solver` commands.
-- `llm.py`: OpenAI-compatible and mock model clients, retries, reasoning
-  settings, and hosted web-search controls.
-- `config.py`: environment and API-key resolution.
-- `packet.py`: the small system/user prompt payload type.
-- `io_utils.py`: JSON parsing and run-file helpers used by the solver.
+After installing the repository with `python -m pip install -e '.[pipeline]'`:
 
-## S0-S6 pipeline
+```bash
+python -m solver --help
+python -m solver run-open-problem --help
+python -m solver prepare-cleaner-problem --help
+python -m solver run-cleaner-solver --help
+```
 
-- `orchestrator.py`: rounds, S1-S5 parallelism, branches, citation gate,
-  verifier cascade, and terminal state.
-- `agent_calls.py`: S0-S6, citation, verifier, composer, and final-checker calls.
-- `controller.py`: deterministic routing and stopping rules.
-- `prompt_loader.py`: fixed-role prompt extraction from the selected packet.
-- `schemas.py`: typed solver, report, controller, and state records.
-- `report_parsers.py`: model report parsing.
-- `run_store.py`: persisted state and per-round artifacts.
-- `s6_artifacts.py`: deterministic splitting of S6 output artifacts.
-- `mock.py`: deterministic offline scenarios.
+| Command | Purpose |
+|---|---|
+| `run-open-problem` | Run S0-S6 on an existing theorem packet |
+| `prepare-cleaner-problem` | Source-audit and export one Paper Cleaner Mini package |
+| `run-cleaner-solver` | Run Mini, package gates, export, S0-S6, citation, and verifiers |
 
-## Citation gate
+The repository-level shell wrappers in [`Commands/`](../../Commands/README.md)
+are the recommended interface for ordinary paper runs.
 
-- `../citation/prompts.py`: Citation Generator/Verifier prompt extraction.
-- `../citation/gate.py`: gate execution and persisted audit artifacts.
-- `../citation/parsers.py`: controller-summary parsing.
-- `../citation/models.py`: typed citation reports and decisions.
-- `../citation/clients.py`: deterministic offline citation responses.
+## S0-S6 lifecycle
 
-## Prompt views
+1. S0 creates a proof blueprint and identifies one key solver.
+2. S1-S5 solve assigned obligations, with bounded parallelism.
+3. S6 composes a single candidate proof.
+4. Deterministic code splits and assembles the proof artifacts.
+5. The exact-target and citation gates run.
+6. A1/A2/A3, Composer A, B, and C run if prior gates clear.
+7. The controller selects a bounded rerun, branch, human-review, or final route.
+8. On the final route, a private gold proof enables the Final Checker; a clean
+   public-only cascade can instead reach `accepted_cascade_only`. The controller
+   then records the resulting terminal state. Earlier stops do not run the
+   Final Checker.
 
-`prompts/` contains generated S0, S1-S5, S6, and source-gate prompt views for
-component-level review. The runtime source of truth remains the selected file
-under `../../Prompt Packet/`. From the repository root, regenerate views with
-`python prompt_sync.py --write`.
+The presence of an S6 response is not an acceptance decision. Read `state.json`
+and the artifacts for the gates actually reached.
 
-## Cleaner integration
+## Important modules
 
-- `cleaner_bridge.py`: audited cleaner-package export into solver inputs.
-- `skeleton_source_gate.py`: restricted source-validation gate before S0-S6.
+| Module | Responsibility |
+|---|---|
+| `cli.py` | CLI parsing and integrated entry points |
+| `orchestrator.py` | rounds, branches, gates, and terminal lifecycle |
+| `controller.py` | deterministic decisions and stop rules |
+| `agent_calls.py` | role calls and prompt packets |
+| `prompt_loader.py` | canonical-packet role extraction |
+| `cleaner_bridge.py` | audited cleaner export into solver inputs |
+| `skeleton_source_gate.py` | restricted validation of Section 3 grants |
+| `sealed_proofs.py` | branch-proof sealing and final assembly |
+| `s6_artifacts.py` | deterministic S6 artifact splitting |
+| `report_parsers.py` | structured model-report parsing |
+| `run_store.py` | persisted state and round artifacts |
+| `mock.py` | deterministic offline scenarios |
 
-The standalone repository intentionally contains no nested `open_problem/` and
-no legacy benchmark orchestrator, bundle, metrics, or model-record modules.
+The sibling [`citation`](../citation/README.md) and
+[`verifiers`](../verifiers/README.md) packages own their focused subsystems.
+
+## Prompt ownership
+
+The runtime source of truth is the selected canonical file under
+[`Prompt Packet/`](../../Prompt%20Packet/README.md). Files in `prompts/` are
+generated review views and must not be edited directly.
+
+```bash
+python prompt_sync.py --write
+python prompt_sync.py --check
+```
+
+## Input and output contracts
+
+- Hand-authored inputs: [`Inputs/solver_input/README.md`](../../Inputs/solver_input/README.md)
+- Run artifacts: [`Outputs/README.md`](../../Outputs/README.md)
+- Complete source map: [`SOURCE_MAP.md`](../../SOURCE_MAP.md)
+
+## Claim boundary
+
+The solver searches for and composes candidate arguments. It is not a formal
+proof kernel. A mathematically persuasive response may still fail target,
+source, citation, coupling, or verifier gates; the terminal status is the
+authoritative workflow result.
