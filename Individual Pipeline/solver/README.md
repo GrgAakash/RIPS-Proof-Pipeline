@@ -1,8 +1,8 @@
 # Solver
 
-This package implements the S0-S6 proof-reconstruction workflow, deterministic
-routing, branching, final proof assembly, and integration with citation and
-verification gates.
+This package runs the proof-solving team. S0 makes a plan, S1-S5 work through
+its parts, and S6 combines them into a proof. The controller saves each step
+and decides whether to review the proof, try again, or stop.
 
 ## Entry points
 
@@ -21,25 +21,28 @@ python -m solver run-cleaner-solver --help
 | `prepare-cleaner-problem` | Source-audit and export one Paper Cleaner Mini package |
 | `run-cleaner-solver` | Run Mini, package gates, export, S0-S6, citation, and verifiers |
 
-The repository-level shell wrappers in [`Commands/`](../../Commands/README.md)
-are the recommended interface for ordinary paper runs.
+For a paper run, start with the shell scripts in the
+[command guide](../../Commands/README.md).
 
 ## S0-S6 lifecycle
 
-1. S0 creates a proof blueprint and identifies one key solver.
-2. S1-S5 solve assigned obligations, with bounded parallelism.
-3. S6 composes a single candidate proof.
-4. Deterministic code splits and assembles the proof artifacts.
-5. The exact-target and citation gates run.
-6. A1/A2/A3, Composer A, B, and C run if prior gates clear.
-7. The controller selects a bounded rerun, branch, human-review, or final route.
-8. On the final route, a private gold proof enables the Final Checker; a clean
-   public-only cascade can instead reach `accepted_cascade_only`. The controller
-   then records the resulting terminal state. Earlier stops do not run the
-   Final Checker.
+Both prompt modes use the same key-solver-first rule. Enabling internet access
+does not change that order.
 
-The presence of an S6 response is not an acceptance decision. Read `state.json`
-and the artifacts for the gates actually reached.
+1. S0 makes a plan and chooses the key solver.
+2. The key solver runs first. If it returns `solved`, the other four solvers run
+   their assigned parts, with a limit on parallel calls.
+3. S6 writes a single candidate proof.
+4. Code assembles the proof files, including any accepted branch proofs.
+5. Reviewers check the target statement and citations.
+6. If those checks pass, A1/A2/A3, Composer A, B, and C review the mathematics.
+7. The controller decides whether to retry, attempt a separate lemma, request
+   human review, or proceed to the final check, within the run's limits.
+8. If a private reference proof is supplied, the Final Checker reviews the
+   candidate. Without it, a passing review chain can reach
+   `accepted_cascade_only`. Runs that stop earlier do not reach this check.
+
+Read `state.json` to see where the run stopped and which reviews it completed.
 
 ## Important modules
 
@@ -58,14 +61,14 @@ and the artifacts for the gates actually reached.
 | `run_store.py` | persisted state and round artifacts |
 | `mock.py` | deterministic offline scenarios |
 
-The sibling [`citation`](../citation/README.md) and
-[`verifiers`](../verifiers/README.md) packages own their focused subsystems.
+The [citation](../citation/README.md) and [verifier](../verifiers/README.md)
+guides explain the review stages.
 
 ## Prompt ownership
 
-The runtime source of truth is the selected canonical file under
-[`Prompt Packet/`](../../Prompt%20Packet/README.md). Files in `prompts/` are
-generated review views and must not be edited directly.
+The runtime reads its role prompts from the selected file in
+[Prompt Packet/](../../Prompt%20Packet/README.md). The copies in `prompts/` are
+generated for reference. Edit the original packet, then regenerate the copies:
 
 ```bash
 python prompt_sync.py --write
@@ -80,7 +83,6 @@ python prompt_sync.py --check
 
 ## Claim boundary
 
-The solver searches for and composes candidate arguments. It is not a formal
-proof kernel. A mathematically persuasive response may still fail target,
-source, citation, coupling, or verifier gates; the terminal status is the
-authoritative workflow result.
+S6 produces a candidate, not an acceptance decision. Its proof may still fail
+the statement, source, or mathematical reviews. Report the final status from
+`state.json`; these model-based checks are not formal verification.

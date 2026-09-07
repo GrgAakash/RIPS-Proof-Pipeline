@@ -56,6 +56,7 @@
 
 This is the route executed by `python -m solver run-open-problem`. Setup gates
 are guaranteed only when the input bundle came through `run-cleaner-solver`.
+Both prompt packets use the key-solver-first schedule shown below.
 
 ```mermaid
 flowchart TD

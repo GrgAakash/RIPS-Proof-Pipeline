@@ -34,6 +34,11 @@ PUBLIC_DOCUMENTS = (
     ROOT / "Outputs" / "README.md",
     ROOT / "Outputs" / "publishable" / "README.md",
     ROOT / "Results" / "README.md",
+    ROOT / "Examples" / "cayley" / "README.md",
+    ROOT / "Results" / "paper_reproduction" / "README.md",
+    ROOT / "Results" / "paper_reproduction" / "paired_outcomes.md",
+    ROOT / "Results" / "paper_reproduction" / "report.md",
+    ROOT / "Results" / "paper_reproduction" / "report_without_lemma.md",
     ROOT / "Results" / "brokenarxiv" / "README.md",
     ROOT / "Results" / "brokenarxiv" / "runs" / "problem_38_run_02"
         / "raw_chronological_layout" / "README.md",

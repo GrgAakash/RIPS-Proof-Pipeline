@@ -1,0 +1,7 @@
+{
+  "decision": "PASS",
+  "failure_category": "none",
+  "public_diagnosis": [
+    "The proof is acceptable: it supplies an internal fixed-root enumeration by an explicit encoding and decoding, handles n=1, then uses only disjoint-union counting and finite uniform probability arithmetic to obtain the target probability."
+  ]
+}

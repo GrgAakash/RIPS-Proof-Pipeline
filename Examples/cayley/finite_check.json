@@ -1,0 +1,41 @@
+{
+  "scope": "exhaustive n=1..6 only; not a proof and not supplied to solvers",
+  "rows": [
+    {
+      "n": 1,
+      "all_functions": 1,
+      "one_cyclic_vertex": 1,
+      "expected": 1
+    },
+    {
+      "n": 2,
+      "all_functions": 4,
+      "one_cyclic_vertex": 2,
+      "expected": 2
+    },
+    {
+      "n": 3,
+      "all_functions": 27,
+      "one_cyclic_vertex": 9,
+      "expected": 9
+    },
+    {
+      "n": 4,
+      "all_functions": 256,
+      "one_cyclic_vertex": 64,
+      "expected": 64
+    },
+    {
+      "n": 5,
+      "all_functions": 3125,
+      "one_cyclic_vertex": 625,
+      "expected": 625
+    },
+    {
+      "n": 6,
+      "all_functions": 46656,
+      "one_cyclic_vertex": 7776,
+      "expected": 7776
+    }
+  ]
+}

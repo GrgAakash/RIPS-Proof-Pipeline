@@ -1,0 +1,160 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+
+\newtheorem*{theorem}{Theorem}
+
+\begin{document}
+
+\begin{theorem}
+Let \(n\) be a positive integer. The probability that a uniform random function
+\(f:[n]\to[n]\) has a unique cyclic vertex in its associated directed graph \(G_f\)
+is \(1/n\).
+\end{theorem}
+
+\begin{proof}
+Let
+\[
+\mathcal F_n=\{f:[n]\to[n]\}
+\]
+and let
+\[
+A_n=\{f\in\mathcal F_n: G_f\text{ has a unique cyclic vertex}\}.
+\]
+The map \(f\mapsto(f(1),\ldots,f(n))\) is a bijection from \(\mathcal F_n\) to
+\([n]^n\), so \(|\mathcal F_n|=n^n\). By the uniform finite probability
+convention,
+\[
+\Pr(A_n)=\frac{|A_n|}{|\mathcal F_n|}=\frac{|A_n|}{n^n}.
+\]
+It remains to count \(|A_n|\).
+
+First record a finite-orbit fact. For \(f:[n]\to[n]\), define \(f^0(x)=x\) and
+\(f^{k+1}(x)=f(f^k(x))\). For any \(x\in[n]\), the \(n+1\) vertices
+\[
+f^0(x),f^1(x),\ldots,f^n(x)
+\]
+lie in the \(n\)-element set \([n]\), so two are equal. If \(b>0\) is the least
+index for which \(f^a(x)=f^b(x)\) for some \(a<b\), then
+\[
+f^a(x),f^{a+1}(x),\ldots,f^{b-1}(x)
+\]
+are pairwise distinct and form a directed cycle in \(G_f\). Hence every forward
+orbit eventually enters a directed cycle. If \(G_f\) has a unique cyclic vertex
+\(r\), then the cycle through \(r\) has only the vertex \(r\), so \(f(r)=r\).
+Moreover, the eventual cycle reached by any vertex must be the loop at \(r\);
+therefore every vertex reaches \(r\) after finitely many iterations of \(f\).
+
+\medskip
+\noindent\textbf{[KEY STEP].} Fix \(r\in[n]\), and set
+\[
+\mathcal A_{n,r}=\{f:[n]\to[n]\colon r\text{ is the unique cyclic vertex of }G_f\}.
+\]
+We prove that \(|\mathcal A_{n,r}|=n^{n-2}\) for \(n\ge2\), and that
+\(|\mathcal A_{1,1}|=1\). If \(n=1\), the only function \([1]\to[1]\) has the
+single loop at \(1\), so \(|\mathcal A_{1,1}|=1\).
+
+Assume \(n\ge2\). We construct a bijection
+\[
+\Phi:\mathcal A_{n,r}\to [n]^{n-2}.
+\]
+For \(R\subseteq[n]\) containing \(r\), call \(a\in R\setminus\{r\}\) an
+\(R\)-leaf if no vertex \(y\in R\setminus\{a\}\) has \(f(y)=a\).
+
+Given \(f\in\mathcal A_{n,r}\), start with \(R_1=[n]\). For
+\(k=1,\ldots,n-2\), choose \(a_k\) to be the least \(R_k\)-leaf in
+\(R_k\setminus\{r\}\), set \(w_k=f(a_k)\), and put
+\(R_{k+1}=R_k\setminus\{a_k\}\). This is well-defined. Indeed, suppose at the
+beginning of a step that \(r\in R_k\), that \(f(R_k)\subseteq R_k\), and that
+every vertex of \(R_k\) reaches \(r\). If no non-root \(R_k\)-leaf existed, then
+for every \(u\in R_k\setminus\{r\}\) there would be a vertex
+\(p(u)\in R_k\setminus\{u\}\) with \(f(p(u))=u\). Since \(f(r)=r\), this
+\(p(u)\) lies in \(R_k\setminus\{r\}\). Iterating \(p\) in the finite set
+\(R_k\setminus\{r\}\) would repeat and produce a directed cycle for \(f\)
+entirely outside \(r\), contradicting the fact that every remaining vertex
+reaches \(r\). Thus a least non-root \(R_k\)-leaf exists.
+
+For such a leaf \(a_k\), one has \(f(a_k)\ne a_k\), since otherwise
+\(a_k\ne r\) would be cyclic. Thus no vertex of \(R_k\) maps to \(a_k\), and
+deleting \(a_k\) preserves \(f(R_{k+1})\subseteq R_{k+1}\). The remaining
+vertices still reach \(r\), because a path from a remaining vertex to \(r\)
+cannot pass through \(a_k\) without some remaining vertex mapping to \(a_k\).
+The induction continues until two vertices remain, \(R_{n-1}=\{r,b\}\), and then
+closure, \(f(r)=r\), and reachability force \(f(b)=r\). Define
+\[
+\Phi(f)=(w_1,\ldots,w_{n-2}).
+\]
+
+Conversely, given \(w=(w_1,\ldots,w_{n-2})\in[n]^{n-2}\), start with
+\(R_1=[n]\). For \(k=1,\ldots,n-2\), choose \(a_k\) to be the least element of
+\(R_k\setminus\{r\}\) that does not occur among
+\[
+w_k,w_{k+1},\ldots,w_{n-2}.
+\]
+Such an element exists because \(R_k\setminus\{r\}\) has \(n-k\) elements and
+the suffix has length \(n-k-1\). Define \(f(a_k)=w_k\) and set
+\(R_{k+1}=R_k\setminus\{a_k\}\). The assignment is legitimate: \(w_k\ne a_k\),
+and \(w_k\) was not removed earlier, for if \(w_k=a_j\) with \(j<k\), then
+\(a_j\) would have appeared in the suffix \(w_j,\ldots,w_{n-2}\), contrary to
+the choice of \(a_j\). After the \(n-2\) steps, write the remaining set as
+\(\{r,b\}\), and define \(f(b)=r\) and \(f(r)=r\). This defines a function
+\(f:[n]\to[n]\). If \(a_k\) has index \(k\), \(b\) has index \(n-1\), and
+\(r\) has index \(n\), then \(f(v)\) has strictly larger index than \(v\) for
+every \(v\ne r\). Hence every non-root vertex reaches \(r\), while \(r\) is
+fixed, so the only directed cycle is the loop at \(r\). Thus the decoding gives
+a map \(\Psi:[n]^{n-2}\to\mathcal A_{n,r}\).
+
+The maps \(\Phi\) and \(\Psi\) are inverse maps. Let \(f\in\mathcal A_{n,r}\)
+and let \(\Phi(f)=w\). At encoding step \(k\), for \(y\in R_k\setminus\{r\}\),
+\[
+y\text{ is an }R_k\text{-leaf}
+\quad\Longleftrightarrow\quad
+y\text{ does not occur among }w_k,\ldots,w_{n-2}.
+\]
+If \(y=w_j=f(a_j)\) for some \(j\ge k\), then the still-present vertex
+\(a_j\ne y\) maps to \(y\), so \(y\) is not a leaf. Conversely, if \(y\) is not
+a leaf, choose \(z\in R_k\setminus\{y\}\) with \(f(z)=y\). Since \(y\ne r\),
+the vertex \(z\) is neither \(r\) nor the final vertex \(b\), because
+\(f(r)=f(b)=r\). Thus \(z=a_j\) for some \(j\ge k\), and \(w_j=y\). Therefore
+decoding \(\Phi(f)\) chooses the same least vertex at every step and reconstructs
+\(f\), so \(\Psi(\Phi(f))=f\).
+
+Conversely, let \(w\in[n]^{n-2}\) and let \(\Psi(w)=f\). At decoding step \(k\),
+the chosen \(a_k\) is an \(R_k\)-leaf, since it does not appear in the remaining
+suffix and neither \(b\) nor \(r\) maps to it. If \(y<a_k\) is a non-root
+remaining vertex, then by the choice of \(a_k\), the vertex \(y\) occurs in the
+remaining suffix, so some still-present vertex maps to \(y\). Hence \(a_k\) is
+the least \(R_k\)-leaf, and the encoding records \(f(a_k)=w_k\) at each step.
+Thus \(\Phi(\Psi(w))=w\).
+
+Therefore \(\Phi\) is a bijection from \(\mathcal A_{n,r}\) to \([n]^{n-2}\).
+Since there are \(n^{n-2}\) words of length \(n-2\) over \([n]\), we have
+\[
+|\mathcal A_{n,r}|=n^{n-2}\qquad(n\ge2).
+\]
+
+Now for each \(r\in[n]\), let
+\[
+A_{n,r}=\{f\in\mathcal F_n: r\text{ is the unique cyclic vertex of }G_f\}.
+\]
+Then
+\[
+A_n=\bigsqcup_{r\in[n]}A_{n,r},
+\]
+because every function with a unique cyclic vertex has exactly one such vertex
+\(r\in[n]\), and a unique vertex cannot be two distinct elements. If \(n=1\),
+then \(|A_n|=1=1^{1-1}\). If \(n\ge2\), then each fixed-root class has size
+\(n^{n-2}\), so
+\[
+|A_n|=\sum_{r\in[n]}|A_{n,r}|=n\cdot n^{n-2}=n^{n-1}.
+\]
+Thus \(|A_n|=n^{n-1}\) for every positive integer \(n\). Finally,
+\[
+\Pr(A_n)=\frac{|A_n|}{n^n}
+=\frac{n^{n-1}}{n^n}
+=\frac1n.
+\]
+This proves the theorem.
+\end{proof}
+
+\end{document}

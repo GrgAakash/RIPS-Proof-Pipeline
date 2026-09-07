@@ -1,12 +1,10 @@
 # Paper Cleaner Mini
 
-Paper Cleaner Mini turns one selected theorem into the public packet consumed
-by S0-S6. It is the repository's current packaging path.
+Paper Cleaner Mini prepares the context a solver needs for one theorem:
+definitions, assumptions, and supporting results, with their proofs removed.
 
-**Mini is the second cleaner stage, not a smaller replacement for Paper
-Cleaner.** Paper Cleaner first processes the whole paper through Step 5 and
-selects source-backed target IDs. Mini then handles one of those targets at a
-time:
+It runs **after Paper Cleaner**, which reads the whole paper and selects the
+targets through Step 5. Mini handles one selected theorem at a time:
 
 ```text
 whole-paper index + selected target
@@ -16,23 +14,19 @@ whole-paper index + selected target
     -> S0-S6
 ```
 
-Paper Cleaner determines **what theorem is being attempted**. Mini determines
-**what context the solver is allowed to use for that theorem**. See the
+Paper Cleaner chooses **which theorem to attempt**; Mini chooses **what context
+the solver can use**. See the
 [whole-paper cleaner guide](../paper_cleaner/README.md#paper-cleaner-versus-paper-cleaner-mini)
-for the side-by-side boundary and the retained legacy Steps 6-8.
+for a side-by-side comparison and the older Steps 6–8.
 
-Mini receives the full paper and a source-backed target selected by Paper
-Cleaner. An author model chooses the necessary context, a checker challenges
-the draft, and a repair model addresses concrete failures. Code—not a
-model—owns the target statement and the decision to ship or exclude the
-package.
+An author model drafts the context, a checker reviews it, and a repair model
+fixes any problems. Code keeps the target statement unchanged and decides
+whether the package passes.
 
-> [!IMPORTANT]
-> Mini is `target_scoped_proof_informed`: its authoring roles can inspect the
-> target's source proof while deciding which prerequisites belong in the
-> packet. Checks look for proof leakage in the exported solver input; they do
-> not guarantee that all indirect hints are absent. A Mini package is not
-> experimentally equivalent to a proof-blind full-paper skeleton.
+Mini can read the original proof while choosing context; the solver cannot.
+The finished input is checked for proof leakage, though these checks cannot
+rule out every indirect hint. This is the `target_scoped_proof_informed` setup,
+not preparation done without seeing the proof.
 
 ## Run it
 
@@ -43,8 +37,8 @@ export OPENAI_API_KEY='...'
 ARXIV=2604.04891 ./Commands/run_mini_from_arxiv.sh
 ```
 
-This prepares the paper through upstream Step 5, runs Mini on every selected
-main or hardest target, and performs the independent Mini audit. Inputs go to
+This runs Paper Cleaner through Step 5, prepares every selected main or hardest
+target with Mini, and runs a separate audit. Inputs go to
 `Inputs/paper_cleaner_input/`; Mini outputs go to `Outputs/mini/`. Both are
 ignored by Git.
 
@@ -55,6 +49,8 @@ python run.py \
   --arxiv 2604.04891 \
   --target-id stmt-a83f71c209d4
 ```
+
+Replace the example target ID with one from the paper's `roles/selection.json`.
 
 Inspect the subprocess commands without downloading a paper or calling a
 model:
@@ -67,15 +63,14 @@ python run.py --arxiv 2604.04891 --print-plan
 
 1. The author writes Sections 0-5 of `problem.md` from the full paper.
 2. The controller appends the frozen source statement as Section 6.
-3. Deterministic checks reject structural errors, target drift, unknown macros,
-   obvious proof leakage, or malformed Section 3 grants.
-4. The checker reviews self-containment, sufficiency, and leakage.
+3. Code checks the structure, target, macros, proof leakage, and Section 3 sources.
+4. The checker looks for missing context and leaked proof material.
 5. If the checker finds a repairable problem, the repair role revises Sections
    0-5 and the checks run again.
 6. A separate audit rechecks the finished package and its hashes.
 
-The default repair budget is two rounds. A package that still fails is listed
-in `excluded.json`; it is not silently promoted to solver input.
+Mini allows two repair rounds by default. A package that still fails goes into
+`excluded.json` rather than to the solver.
 
 The models cannot edit `target.tex`, `target.json`, or Section 6. On a retry,
 Mini validates those frozen artifacts rather than replacing them.
@@ -113,9 +108,8 @@ runs/<paper-id>/packages/<target-id>/stage2/
 | 5 | permitted results from the same paper, without their proofs |
 | 6 | the exact target statement, inserted by code |
 
-The stage report and independent audit bind their decisions to the exact
-package and target hashes. A passing model opinion cannot override a failed
-deterministic check.
+The stage report and separate audit record which exact files they checked,
+using file hashes. A model's approval cannot override a failed code check.
 
 ## Run from existing prepared inputs
 
@@ -148,21 +142,19 @@ python audit.py \
   --fail-on-package-issues
 ```
 
-`--fail-on-package-issues` is the useful automation boundary: it succeeds only
-when the selected package passes the independent audit and matches the recorded
-hashes.
+Use `--fail-on-package-issues` in scripts: the command succeeds only if the
+selected package passes the audit and matches its recorded hashes.
 
 ## Hand the package to S0-S6
 
-The supported end-to-end commands are documented in
-[Commands/README.md](../../Commands/README.md). The integrated
-`run-cleaner-solver` route performs, in order:
+Use the [command guide](../../Commands/README.md) to run the full workflow.
+The `run-cleaner-solver` command runs these steps in order:
 
-1. Mini author/check/repair;
-2. independent package audit;
-3. restricted source verification for Section 3 grants;
-4. deterministic solver-bundle export;
-5. S0-S6 and the downstream evidence gates.
+1. prepare, check, and repair the Mini packet;
+2. audit the finished packet separately;
+3. check sources for the external results in Section 3;
+4. export the solver's input files;
+5. run S0-S6, then the statement, source, and proof reviews.
 
 The exported public bundle contains:
 
@@ -186,10 +178,9 @@ explicitly enables the private Final Checker.
 - `--parallel` controls whole-paper concurrency; the default is 2.
 - `--max-repairs` controls the bounded repair loop; the default is 2.
 
-The prompts can contain the full paper, so API calls may be large. Run
-`--print-plan`, verify the model and output directories, and start with one
-target. Compatible calls are cached, but provider telemetry—not the cache—is
-the billing record.
+The prompts can contain the full paper, so API calls may be large. Use
+`--print-plan` to check the settings, and start with one target. Cached calls
+can be reused; check the provider's usage records for actual costs.
 
 Do not publish `inputs/`, `runs/`, or `Outputs/mini/` wholesale. They can
 contain paper text, reference proofs, raw model responses, and audit material.

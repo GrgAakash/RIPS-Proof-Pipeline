@@ -1,13 +1,10 @@
 # Solver input contract
 
-Each integrated run exports an audited solver bundle under this workspace.
-Users may also create a hand-authored theorem packet and pass it to
-`python -m solver run-open-problem`.
+The integrated pipeline saves each prepared theorem packet here. You can also
+write your own packet and run it with `python -m solver run-open-problem`.
 
-> [!IMPORTANT]
-> A hand-authored packet bypasses cleaner provenance, independent package
-> audit, and the pre-solver source gate. Its terminal status covers only the
-> stages that actually ran.
+A hand-authored packet skips the cleaner, separate package audit, and
+pre-solver source check. Its result covers only the stages that ran.
 
 ## Minimal packet
 
@@ -25,8 +22,8 @@ Users may also create a hand-authored theorem packet and pass it to
 
 Provide `target.md` and one public skeleton. If both skeleton filenames exist,
 the loader uses `skeleton.md` and ignores `skeleton.tex`. The directory name
-becomes the problem identifier in the output path; integrated exports use a
-nested directory named `solver_input`.
+becomes the problem ID in the output path. Integrated runs use a nested
+directory named `solver_input`.
 
 ## `target.md`
 
@@ -60,7 +57,7 @@ Do not include:
 
 ## `allowed_support.md`
 
-State the premise boundary explicitly. A useful pattern is:
+List which results the solver may use without proving them. For example:
 
 ```text
 Definitions, notation, conventions, and standing assumptions in Sections 1,
@@ -75,8 +72,8 @@ The target is not an allowed premise. No equivalent, stronger, or logically
 downstream statement may be used as a premise.
 ```
 
-If this file is absent, the selected prompt packet's default support rule
-applies. An explicit file is safer for a public or auditable run.
+Without this file, the selected prompt packet's default rule applies. Include
+it when you want readers to see exactly what support was allowed.
 
 ## Optional files
 
@@ -106,8 +103,8 @@ python -m solver run-open-problem \
   --max-branches 0
 ```
 
-The mock confirms that the packet loads and the orchestrator reaches a terminal
-state. It does not validate the mathematics, citations, or source provenance.
+The mock checks that the packet loads and the workflow finishes. It does not
+check the proof, citations, or original source.
 
 For real API-backed options, run `python -m solver run-open-problem --help` and
 read the [root workflow guide](../../README.md#run-a-hand-authored-solver-packet).

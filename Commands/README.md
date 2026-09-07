@@ -1,13 +1,11 @@
 # Command guide
 
-The scripts in this directory are the stable entry points for paper preparation
-and integrated runs. They resolve the repository root from their own location,
-so they may be called from any working directory.
+Use these scripts to prepare a paper and run the pipeline. They locate the
+repository automatically, so you can call them from any working directory.
 
-> [!CAUTION]
-> Every command in the table below except the offline tests and mock clients can
-> make paid API calls. Review the model, internet mode, private-data setting,
-> and output directory before starting a run.
+All four scripts below can make paid API calls. Check the model, internet
+setting, private inputs, and output directory before starting. For an offline
+first try, use the [mock demo](../README.md#quick-start).
 
 ## Command matrix
 
@@ -21,9 +19,9 @@ so they may be called from any working directory.
 The “no internet” label applies to S0-S6. The pre-solver source gate and
 post-proof citation gate may still use restricted source checking.
 
-`run_mini_from_arxiv.sh` is a self-contained convenience command: it invokes
-the full-paper cleaner through Step 5 before starting Mini. If those inputs
-already exist, the integrated target commands reuse them and begin with Mini.
+`run_mini_from_arxiv.sh` prepares the paper through Step 5 before starting Mini.
+If the prepared inputs already exist, the target-run commands reuse them and
+start with Mini.
 
 ## Recommended workflow
 
@@ -34,8 +32,8 @@ export OPENAI_API_KEY='...'
 ARXIV=2606.16585 ./Commands/prepare_paper_input.sh
 ```
 
-Inspect `Inputs/paper_cleaner_input/2606.16585/roles/selection.json` and choose
-one source-backed target ID of the form `stmt-...`.
+Open `Inputs/paper_cleaner_input/2606.16585/roles/selection.json` and choose a
+`stmt-...` target ID. Use that ID in place of the example below.
 
 ### 2. Run one target
 
@@ -58,8 +56,8 @@ Outputs/<run-name>/solver/<problem-id>/state.json
 Outputs/<run-name>/solver/<problem-id>/round_NNN/
 ```
 
-Do not infer acceptance from the presence of `S6.md` or `final_proof.md` alone.
-Read the terminal status and the gate artifacts that were actually produced.
+Read `state.json` to see how the run ended, then open its review reports.
+A proof file alone does not tell you whether the reviews passed.
 
 ## Environment variables
 
@@ -84,16 +82,14 @@ that mode the strongest possible terminal label is cascade-only acceptance.
 
 ## Cost and privacy boundary
 
-- Preparation, Mini, source checking, solver, citation, and verifier roles may
-  each generate model usage.
+- Preparation, solving, and each review stage can make model calls.
 - Increasing parallelism does not reduce token consumption and may increase
   rate-limit retries.
-- Prepared inputs and outputs can contain third-party paper text and raw model
-  responses; their workspaces are ignored by Git.
+- Input and output folders can contain paper text and raw responses; Git
+  ignores these working directories.
 - Private gold proofs and full source belong only in the ignored private bundle
   used by the Final Checker.
 - Never place credentials in command history, committed files, run reports, or
   bug reports.
 
-For a zero-cost first check, use the offline mock and regression commands in
-the [root README](../README.md#quick-start).
+The [root README](../README.md#quick-start) also shows how to run the offline tests.

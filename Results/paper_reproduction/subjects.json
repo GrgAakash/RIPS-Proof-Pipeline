@@ -1,0 +1,280 @@
+{
+  "checked_on": "2026-09-07",
+  "source": "https://export.arxiv.org/api/query",
+  "classification_field": "arxiv:primary_category",
+  "category_names": {
+    "math.AC": "Commutative Algebra",
+    "math.AG": "Algebraic Geometry",
+    "math.CA": "Classical Analysis and ODEs",
+    "math.CO": "Combinatorics",
+    "math.NT": "Number Theory",
+    "math.OC": "Optimization and Control",
+    "math.PR": "Probability",
+    "math.ST": "Statistics Theory",
+    "q-fin.MF": "Mathematical Finance"
+  },
+  "papers": [
+    {
+      "arxiv_id": "2603.19491",
+      "metadata_version": "2603.19491v1",
+      "title": "Families of Congruences for Partitions with $k$-colored odd parts",
+      "primary_category": "math.NT",
+      "categories": [
+        "math.NT"
+      ]
+    },
+    {
+      "arxiv_id": "2604.07183",
+      "metadata_version": "2604.07183v3",
+      "title": "Stopping on the last success with unknown odds: asymptotic minimax optimality of the plug-in rule",
+      "primary_category": "math.PR",
+      "categories": [
+        "math.PR"
+      ]
+    },
+    {
+      "arxiv_id": "2604.25023",
+      "metadata_version": "2604.25023v1",
+      "title": "The Mukai conjecture via Cox rings for special toric ambient embeddings",
+      "primary_category": "math.AG",
+      "categories": [
+        "math.AG"
+      ]
+    },
+    {
+      "arxiv_id": "2605.04912",
+      "metadata_version": "2605.04912v2",
+      "title": "Can the $L^1$-$L^\\infty$ duality be restored for non-dominated families of probability measures?",
+      "primary_category": "math.PR",
+      "categories": [
+        "math.PR",
+        "math.ST"
+      ]
+    },
+    {
+      "arxiv_id": "2605.07617",
+      "metadata_version": "2605.07617v2",
+      "title": "The Isomorphism Classes of the Surfaces $x_1^{a_1} + x_2^{a_2} + x_3^{a_3} + 1 = 0$",
+      "primary_category": "math.AG",
+      "categories": [
+        "math.AG",
+        "math.AC"
+      ]
+    },
+    {
+      "arxiv_id": "2605.19979",
+      "metadata_version": "2605.19979v3",
+      "title": "Short Proofs in Algebraic and Enumerative Combinatorics",
+      "primary_category": "math.CO",
+      "categories": [
+        "math.CO"
+      ]
+    },
+    {
+      "arxiv_id": "2605.31583",
+      "metadata_version": "2605.31583v2",
+      "title": "Sharp minimax risks and phase transitions in sparse submatrix detection",
+      "primary_category": "math.ST",
+      "categories": [
+        "math.ST",
+        "math.PR"
+      ]
+    },
+    {
+      "arxiv_id": "2606.02299",
+      "metadata_version": "2606.02299v1",
+      "title": "Sharp sign uncertainty for trigonometric polynomials",
+      "primary_category": "math.CA",
+      "categories": [
+        "math.CA"
+      ]
+    },
+    {
+      "arxiv_id": "2606.02847",
+      "metadata_version": "2606.02847v4",
+      "title": "Sharp log-Sobolev inequalities and quartic stability on finite cyclic groups",
+      "primary_category": "math.CA",
+      "categories": [
+        "math.CA",
+        "math.FA",
+        "math.PR"
+      ]
+    },
+    {
+      "arxiv_id": "2606.07143",
+      "metadata_version": "2606.07143v1",
+      "title": "Fourier restriction estimates based on $L^q$-dimensions: beyond Stein--Tomas",
+      "primary_category": "math.CA",
+      "categories": [
+        "math.CA",
+        "math.DS",
+        "math.FA",
+        "math.MG",
+        "math.PR"
+      ]
+    },
+    {
+      "arxiv_id": "2606.15249",
+      "metadata_version": "2606.15249v2",
+      "title": "A universal support theorem for 1-Wasserstein optimal transport",
+      "primary_category": "math.CA",
+      "categories": [
+        "math.CA",
+        "math.OC"
+      ]
+    },
+    {
+      "arxiv_id": "2606.15297",
+      "metadata_version": "2606.15297v1",
+      "title": "From Fractional to Set Tilings for Pairs of Lattices",
+      "primary_category": "math.CA",
+      "categories": [
+        "math.CA"
+      ]
+    },
+    {
+      "arxiv_id": "2606.15432",
+      "metadata_version": "2606.15432v1",
+      "title": "A Concavity Theorem for the Parisi PDE",
+      "primary_category": "math.PR",
+      "categories": [
+        "math.PR",
+        "math-ph",
+        "math.AP"
+      ]
+    },
+    {
+      "arxiv_id": "2606.15670",
+      "metadata_version": "2606.15670v1",
+      "title": "A Note on an Approximate Fixed Point Theorem for $\\operatorname{VMO}$ Maps",
+      "primary_category": "math.CA",
+      "categories": [
+        "math.CA"
+      ]
+    },
+    {
+      "arxiv_id": "2607.03305",
+      "metadata_version": "2607.03305v1",
+      "title": "Cash-invariant hull representation of divergence preferences",
+      "primary_category": "q-fin.MF",
+      "categories": [
+        "q-fin.MF",
+        "math.OC"
+      ]
+    },
+    {
+      "arxiv_id": "2607.03856",
+      "metadata_version": "2607.03856v1",
+      "title": "The exact generalized Turán number for \\(C_6\\) in \\(C_8\\)-free graphs",
+      "primary_category": "math.CO",
+      "categories": [
+        "math.CO"
+      ]
+    },
+    {
+      "arxiv_id": "2607.04347",
+      "metadata_version": "2607.04347v1",
+      "title": "Strong Subgraph-Count Stability in $C_{2\\ell+1}$-Free Graphs",
+      "primary_category": "math.CO",
+      "categories": [
+        "math.CO"
+      ]
+    },
+    {
+      "arxiv_id": "2607.04798",
+      "metadata_version": "2607.04798v2",
+      "title": "Revisiting $q$-Derangement Numbers via Decorated Permutations",
+      "primary_category": "math.CO",
+      "categories": [
+        "math.CO"
+      ]
+    },
+    {
+      "arxiv_id": "2607.04831",
+      "metadata_version": "2607.04831v1",
+      "title": "On two questions of Qi on saturated filtrations",
+      "primary_category": "math.AC",
+      "categories": [
+        "math.AC",
+        "math.AG"
+      ]
+    },
+    {
+      "arxiv_id": "2607.05330",
+      "metadata_version": "2607.05330v2",
+      "title": "On balancing two-slice portions of cake",
+      "primary_category": "math.CO",
+      "categories": [
+        "math.CO"
+      ]
+    },
+    {
+      "arxiv_id": "2607.05374",
+      "metadata_version": "2607.05374v1",
+      "title": "The Minkowski grid has robustly many repeated distances",
+      "primary_category": "math.CO",
+      "categories": [
+        "math.CO",
+        "math.MG",
+        "math.NT"
+      ]
+    },
+    {
+      "arxiv_id": "2607.06275",
+      "metadata_version": "2607.06275v1",
+      "title": "Equality conditions for correlation inequalities",
+      "primary_category": "math.CO",
+      "categories": [
+        "math.CO",
+        "math.PR"
+      ]
+    },
+    {
+      "arxiv_id": "2607.06477",
+      "metadata_version": "2607.06477v1",
+      "title": "A generalised cross-ratio and limits of local heights",
+      "primary_category": "math.AG",
+      "categories": [
+        "math.AG",
+        "math.NT"
+      ]
+    },
+    {
+      "arxiv_id": "2607.07617",
+      "metadata_version": "2607.07617v1",
+      "title": "Loop Equations Characterize Random Matrix Statistics",
+      "primary_category": "math.PR",
+      "categories": [
+        "math.PR",
+        "math-ph"
+      ]
+    },
+    {
+      "arxiv_id": "2607.08871",
+      "metadata_version": "2607.08871v1",
+      "title": "Derived Kunz and Radu--André Theorems",
+      "primary_category": "math.AC",
+      "categories": [
+        "math.AC"
+      ]
+    },
+    {
+      "arxiv_id": "2607.09222",
+      "metadata_version": "2607.09222v1",
+      "title": "Polyhedral extended formulations that approximate the Gomory closure for packing problems",
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC"
+      ]
+    },
+    {
+      "arxiv_id": "2607.09440",
+      "metadata_version": "2607.09440v1",
+      "title": "Inaccessibility of the flat topology",
+      "primary_category": "math.AG",
+      "categories": [
+        "math.AG"
+      ]
+    }
+  ]
+}

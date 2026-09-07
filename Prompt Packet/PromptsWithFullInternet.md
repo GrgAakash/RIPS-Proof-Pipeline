@@ -111,7 +111,12 @@ OPERATING RULES (controller-enforced, not enforced by Solver/Verifiers)
     shown to future Solver rounds.
 
 13. Multi-solver blueprint path. Each round uses S0, S1-S5, and S6. S0 produces a proof
-    blueprint, S1-S5 solve assigned subclaims, and S6 composes the final candidate proof P_k.
+    blueprint and designates exactly one key solver in S1-S5. Run that key solver first. Its
+    assignment passes when its existing section-3 failure output is `solved`; this adds no separate
+    referee or verifier stage. Only after it passes may the other four S1-S5 solvers run and S6
+    compose the final candidate proof P_k. If it does not pass, skip those four solvers and S6,
+    route the key solver's failure through the existing branch/guidance rules, and return to fresh
+    S0 for the next round.
     S0's blueprint and the S1-S5 subproof outputs are internal solver artifacts for the current
     round only: verifiers may inspect them as part of P_k's artifact packet, but the next Solver
     round receives only the cleaned skeleton, target theorem, allowed supporting statements, and
@@ -425,6 +430,8 @@ hardest_step_id:
 hardest_step_description:
 risk_if_wrong:
 how_final_proof_should_handle_it:
+key_solver_id: S1 / S2 / S3 / S4 / S5
+why_key_solver_is_decisive:
 
 5. Failure-mode checks
 
@@ -437,9 +444,11 @@ standard_background_check:
 
 6. Subproblem assignment table
 
-Assign S1-S5. Each assignment should be self-contained. If an assignment depends on an external
-source-supported fact, include the exact fact, source, hypotheses, and why it is upstream of the
-target theorem.
+Assign S1-S5 and mark exactly one assignment as `[KEY SOLVER]`; it must agree with
+`key_solver_id`. The key assignment should be the load-bearing subclaim whose failure most directly
+invalidates the proposed proof architecture. Each assignment should be self-contained. If an
+assignment depends on an external source-supported fact, include the exact fact, source,
+hypotheses, and why it is upstream of the target theorem.
 
 S1:
 S2:
@@ -2974,7 +2983,13 @@ details; if FlowChart.md and this block disagree, pause and reconcile them befor
 
 Round k. Run the multi-solver blueprint system:
   * S0(skeleton, target, guidance list H_k) -> blueprint.
-  * S1-S5 solve assigned subclaims from the S0 blueprint.
+  * S0 designates exactly one key solver K in S1-S5. Run K first.
+  * K passes exactly when its existing S1-S5 failure output is `solved`; no separate referee or
+    verifier is added at this gate.
+  * If K does not pass, apply the existing controller priority to K's single failure output,
+    including an eligible branch or one guidance item, skip the other four solvers and S6, and
+    return to fresh S0.
+  * Only if K passes do the remaining four S1-S5 solvers run their assigned subclaims.
   * S6 composes S0 + S1-S5 into final candidate artifact P_k.
 P_k includes the S0 blueprint, S1-S5 subproblem outputs, and S6 composed proof for verifier
 inspection, but none of those artifacts are shown to the next Solver round except through one

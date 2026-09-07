@@ -1,0 +1,45 @@
+{
+  "source_commit": "db35b63f22791712f3474f25cc3e07606931192d",
+  "source_reports": [
+    {
+      "file": "report.md",
+      "source_path": "integrated_pipeline/Statistics/report_theorem_level.md",
+      "source_rows_sha256": "d66dd1552fb5816ad83267c3f2cf33a0d2137911657280f308e242b84b95e356",
+      "records": 31,
+      "distinct_paper_ids": 27,
+      "column_count": 7,
+      "paper_column": 0,
+      "target_column": 1,
+      "outcome_column": 4,
+      "checker_column": 5,
+      "outcomes": {
+        "blocked_setup": 3,
+        "accepted_final_checker": 21,
+        "blocked_cleaner": 1,
+        "cleaner_only": 1,
+        "accepted_manual_final_checker": 2,
+        "blocked_cleaner_disputed": 2,
+        "incomplete": 1
+      }
+    },
+    {
+      "file": "report_without_lemma.md",
+      "source_path": "integrated_pipeline/Statistics/report_without_lemma.md",
+      "source_rows_sha256": "ab11c2995dfbd77fe3ebcf6587609d6588b79722fc9e76a9a121d6dbe09b0eee",
+      "records": 31,
+      "distinct_paper_ids": 27,
+      "column_count": 8,
+      "paper_column": 2,
+      "target_column": 3,
+      "outcome_column": 5,
+      "checker_column": 6,
+      "outcomes": {
+        "stopped_max_rounds": 9,
+        "accepted_final_checker": 15,
+        "needs_human_review": 4,
+        "api_response_stall": 2,
+        "blocked_setup": 1
+      }
+    }
+  ]
+}

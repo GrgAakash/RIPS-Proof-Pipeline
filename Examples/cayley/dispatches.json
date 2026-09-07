@@ -1,0 +1,140 @@
+{
+  "model": "gpt-5.5",
+  "reasoning_effort": "xhigh",
+  "fork_turns": "none",
+  "note": "Ordered record of actual Codex spawn calls. This is not API telemetry. Concurrent role calls appear in dispatch order.",
+  "roles": [
+    {
+      "role": "manual_preparation",
+      "agent": "/root/demo_prepare",
+      "packet": "packets/setup_author.md",
+      "source_access": "full_source"
+    },
+    {
+      "role": "privacy_preflight",
+      "agent": "/root/demo_preflight_privacy",
+      "packet": "bounded read-only metadata task",
+      "source_access": "none"
+    },
+    {
+      "role": "setup_audit",
+      "agent": "/root/demo_setup_audit",
+      "packet": "packets/setup_audit.md",
+      "source_access": "full_source"
+    },
+    {
+      "role": "S0",
+      "agent": "/root/demo_s0",
+      "packet": "packets/S0.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "S3",
+      "agent": "/root/demo_s3",
+      "packet": "packets/S3.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "S1",
+      "agent": "/root/demo_s1",
+      "packet": "packets/S1.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "S2",
+      "agent": "/root/demo_s2",
+      "packet": "packets/S2.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "S4",
+      "agent": "/root/demo_s4",
+      "packet": "packets/S4.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "S5",
+      "agent": "/root/demo_s5",
+      "packet": "packets/S5.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "S6",
+      "agent": "/root/demo_s6",
+      "packet": "packets/S6.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "problem_statement",
+      "agent": "/root/demo_target_check",
+      "packet": "packets/problem_statement.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "citation_generator",
+      "agent": "/root/demo_citation_generator",
+      "packet": "packets/citation_generator.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "citation_verifier",
+      "agent": "/root/demo_citation_verifier",
+      "packet": "packets/citation_verifier.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "A1",
+      "agent": "/root/demo_a1",
+      "packet": "packets/verifier_a.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "A2",
+      "agent": "/root/demo_a2",
+      "packet": "packets/verifier_a.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "A3",
+      "agent": "/root/demo_a3",
+      "packet": "packets/verifier_a.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "composer_a",
+      "agent": "/root/demo_composer_a",
+      "packet": "packets/composer_a.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "verifier_b",
+      "agent": "/root/demo_b",
+      "packet": "packets/verifier_b.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "verifier_c",
+      "agent": "/root/demo_c",
+      "packet": "packets/verifier_c.md",
+      "source_access": "public_only"
+    },
+    {
+      "role": "final_checker",
+      "agent": "/root/demo_final_checker",
+      "packet": "private/final_checker.md",
+      "source_access": "full_source_and_reference_proof"
+    },
+    {
+      "role": "decision_controller",
+      "agent": "/root/demo_decision",
+      "packet": "packets/decision.md",
+      "source_access": "public_reports_and_metadata_only"
+    },
+    {
+      "role": "controller_audit",
+      "agent": "/root/demo_controller_audit",
+      "packet": "packets/controller_audit.md",
+      "source_access": "public_reports_and_metadata_only"
+    }
+  ]
+}

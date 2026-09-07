@@ -289,7 +289,7 @@ class OpenProblemOrchestrator:
                 f"round {round_no} key-model solver selected: {routing_key_solver_id}"
             )
 
-        # --- S1-S5: key first in Prompts.md, existing schedule otherwise ------
+        # --- S1-S5: both canonical packets require the key-first schedule ----
         outputs: dict[str, str] = {}
         parsed_by_id: dict[str, SubproblemResult] = {}
 

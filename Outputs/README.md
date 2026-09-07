@@ -1,13 +1,11 @@
 # Run outputs
 
-This directory contains ignored local run artifacts. The integrated pipeline
-and standalone verifier utility use separate layouts and do not consume one
-another's output.
+Runs save their outputs here, where Git ignores them. Start with `state.json`
+to see how a run ended, then open its proof and review reports. A proof file
+alone does not tell you whether it passed review.
 
-> [!IMPORTANT]
-> The presence of a proof file is not an acceptance decision. Begin with the
-> terminal `state.json`, then inspect the artifacts for the gates actually
-> reached.
+Integrated pipeline runs and standalone verifier runs use separate folders;
+neither continues from the other's output.
 
 ## Integrated S0-S6 runs
 
@@ -22,9 +20,11 @@ Outputs/<run-name>/
       final_proof.md                assembled proof used downstream
       problem_statement_verifier.md
       citation_gate/
-        citation_generator.md
-        citation_verifier.md
         citation_gate_summary.json
+        attempt_001/
+          citation_generator_output.md
+          citation_verifier_output.md
+          citation_gate_decision.json
       verifier_a1.md
       verifier_a2.md
       verifier_a3.md
@@ -33,8 +33,14 @@ Outputs/<run-name>/
       verifier_c.md
 ```
 
-Only reached stages are present. A target mismatch stops before citation and
-the A/B/C cascade; a citation failure stops before Verifier A.
+Files appear only for stages that ran. A target mismatch stops review before
+the citation checks; a citation failure stops it before Verifier A.
+
+Citation retries use separate `attempt_NNN/` folders; the summary records which
+attempts ran. See the [citation guide](../Individual%20Pipeline/citation/README.md#runtime-artifacts)
+for the saved prompts and reports. The Python runtime does not currently save
+every role's complete prompt. You can explore public role packets in the
+[worked example](../Examples/cayley/README.md#follow-the-run).
 
 Runs with accepted branch proofs can also contain:
 
@@ -71,7 +77,6 @@ The integrated solver neither reads from nor continues these runs.
 
 ## Publication boundary
 
-Ordinary outputs can contain paper excerpts, raw model responses, private
-material, and misleading intermediate claims. They remain ignored. Only
-deliberately reviewed release artifacts belong under `publishable/`; follow the
-[`publishable` checklist](publishable/README.md) before tracking one.
+Run folders can contain paper excerpts, private reference material, and
+unfinished arguments. Review files before sharing them. For files you intend
+to track under `publishable/`, follow the [publication checklist](publishable/README.md).

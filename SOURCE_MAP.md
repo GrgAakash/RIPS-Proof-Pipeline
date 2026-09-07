@@ -9,7 +9,7 @@
 <h1 align="center">Source Map</h1>
 
 <p align="center">
-  <strong>Find the implementation, contract, or evidence behind each pipeline responsibility.</strong>
+  <strong>Find the code, commands, and saved results.</strong>
 </p>
 
 <p align="center">
@@ -19,23 +19,24 @@
   <a href="Outputs/README.md">Artifact guide</a>
 </p>
 
-> 💡 **Reading tip:** Most readers only need the two tables below. Expand the
-> implementation sections when tracing code, reviewing a change, or debugging
-> a run.
+Use the tables below to find a starting point. Expand a section for the files
+behind that part of the pipeline.
 
 ## Find the right starting point
 
 | I want to… | Start here |
 |---|---|
+| Follow a real run's inputs and outputs | [Cayley's-formula worked example](Examples/cayley/README.md) |
 | Run one paper or theorem packet | [Command guide](Commands/README.md) |
 | Understand the complete execution order | [Operational flow chart](Prompt%20Packet/FlowChart.md) |
 | Inspect or modify source extraction | [Full paper cleaner guide](Individual%20Pipeline/paper_cleaner/README.md) |
 | Inspect target packaging and audit | [Mini cleaner guide](Individual%20Pipeline/paper_cleaner_mini/README.md) |
 | Follow S0-S6, branching, or routing | [Solver guide](Individual%20Pipeline/solver/README.md) |
 | Inspect citation and proof-review gates | [Citation guide](Individual%20Pipeline/citation/README.md) · [Verifier guide](Individual%20Pipeline/verifiers/README.md) |
-| Edit a role contract | [Prompt protocol](Prompt%20Packet/README.md) |
+| Edit a role's instructions | [Prompt protocol](Prompt%20Packet/README.md) |
 | Interpret a completed run | [Output artifact guide](Outputs/README.md) |
 | Browse reviewed public examples | [Results index](Results/README.md) |
+| Compare with-context and without-context results | [Paper-reproduction reports](Results/paper_reproduction/README.md) |
 
 ## Pipeline at a glance
 
@@ -50,10 +51,9 @@
 
 ## Complete implementation index
 
-All Python packages below are editable source; there is no generated `Codes/`
-mirror. `Individual Pipeline/` contains five sibling implementation components
-and is not itself an importable Python package. The map uses file paths instead
-of fragile code line numbers.
+`Individual Pipeline/` holds the five Python components listed below; it is not
+itself an importable package. Edit those files directly—there is no separate
+`Codes/` copy. Links use file paths so code edits do not leave stale line numbers.
 
 <details>
 <summary><strong>Workspace and public surface</strong> — folders, packaging, tests, and README assets</summary>
@@ -79,10 +79,24 @@ of fragile code line numbers.
 - [Commands/](Commands/): reusable shell entry points.
 - [Inputs/](Inputs/): ignored local input workspace.
 - [Outputs/](Outputs/): ignored local run workspace.
+- [Examples/cayley/](Examples/cayley/README.md): reviewed manual Codex-subagent
+  worked example, with role packets, outputs, proof PDFs, and integrity hashes.
 - [Results/](Results/): deliberately reviewed public evaluation artifacts.
+- [Results/paper_reproduction/](Results/paper_reproduction/README.md): with-context
+  and without-context setups, final results, and deduplicated target records.
+- [Results/paper_reproduction/subjects.json](Results/paper_reproduction/subjects.json):
+  primary arXiv categories and paper titles for the subject-coverage view.
+- [Results/paper_reproduction/paired_outcomes.md](Results/paper_reproduction/paired_outcomes.md):
+  four-way context comparison by subject, matched targets, and unresolved labels.
 - [tests/](tests/): offline solver and verifier regression tests.
 - [docs/pipeline-overview.svg](docs/pipeline-overview.svg): public README
   architecture figure.
+- [docs/build_results_charts.py](docs/build_results_charts.py): generates the
+  [benchmark](docs/benchmark-results.svg),
+  [paper-reproduction](docs/paper-reproduction-results.svg), and
+  [subject-coverage](docs/paper-subject-coverage.svg) figures plus the subject lists.
+- [docs/build_paired_results.py](docs/build_paired_results.py): matches report
+  targets and generates the paired subject breakdown without model calls.
 - [docs/rips-proof-mark.png](docs/rips-proof-mark.png) and
   [docs/rips-proof-mark-dark.png](docs/rips-proof-mark-dark.png): light- and
   dark-mode variants of the public README project mark.
@@ -327,6 +341,16 @@ views. Do not hand-edit generated prompt copies.
 - [tests/test_documentation_links.py](tests/test_documentation_links.py): local
   paths, image targets, and section anchors resolve; all public READMEs are
   included in the checked document list.
+- [tests/test_solver_schedule.py](tests/test_solver_schedule.py): key-solver-first
+  execution in both prompt modes, early stops, and documented citation output paths.
+- [tests/test_historical_reports.py](tests/test_historical_reports.py): imported
+  target records match the final-branch snapshot; counts, rates, unique targets,
+  and README summaries stay consistent.
+- [tests/test_results_charts.py](tests/test_results_charts.py): chart values,
+  generated-file drift, accessible SVG labels, and subject coverage of the exact
+  paper collection.
+- [tests/test_paired_results.py](tests/test_paired_results.py): target matching,
+  documented renumbering, excluded records, manual passes, and subject counts.
 - [tests/verifier_pipeline/](tests/verifier_pipeline/): mock, parser,
   prompt-sync, and mocked API cascade tests.
 - [tests/test_prompt_views.py](tests/test_prompt_views.py): repository-wide

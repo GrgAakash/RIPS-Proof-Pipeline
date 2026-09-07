@@ -1,14 +1,12 @@
-# BrokenArXiv S0-S6 artifacts
+# BrokenArXiv example runs
 
-This collection preserves prompts and outputs for **43 selected solver-only
-S0-S6 runs** from the June 2026 BrokenArXiv evaluation. The runs were executed
-on July 20-21, 2026.
+Explore **43 selected runs** from the June 2026 BrokenArXiv evaluation. Each
+folder shows the problem, prompts sent to the S0–S6 solvers, and their recorded
+responses. The runs took place on July 20-21, 2026.
 
-> [!WARNING]
-> These are model-behavior and usage artifacts, **not verified proofs**. The
-> citation gate, A/B/C verifier cascade, and private Final Checker did not run.
-> No solved/unsolved or mathematical-correctness rate should be inferred from
-> this export alone.
+These are solver-only examples. The citation checks, A/B/C reviewers, and
+private Final Checker were not run, so this collection alone does not tell us
+which proofs are correct or establish a success rate.
 
 ## Snapshot
 
@@ -23,26 +21,25 @@ All sessions used `GPT-5.5`. Reasoning effort was `xhigh` for 640 sessions and
 Twelve sessions lack usage telemetry, so the recorded token total is a lower
 bound. Six sessions have no recorded final assistant output.
 
-The usage totals and model settings above are historical accounting figures.
-This export contains prompt/output Markdown, not the original per-session
-usage telemetry or aggregation script. The cost arithmetic below is
-reproducible from the stated totals; those totals cannot be independently
-recomputed from this public export alone.
+These usage totals come from the original accounting records. The export
+contains prompts and responses, but not the per-session usage logs or counting
+script. You can check the cost arithmetic below, but cannot rebuild the token
+totals from these files alone.
 
 ## What is preserved
 
-For each exported run, the collection retains the available:
+Each run includes the files that were available:
 
 - input request and target;
 - role prompts actually sent;
 - role outputs actually recorded;
-- round and branch hierarchy;
+- rounds and nested lemma attempts;
 - parent/root response when present;
-- historical attempts, separated from the 43-run aggregate.
+- earlier attempts, kept separate from the 43-run totals.
 
-The saved prompts beside each output are the most direct evidence of what a
-particular session was asked to do. This repository does not retroactively run
-the newer citation or verifier gates over these historical artifacts.
+Read the prompt beside an output to see what that solver was asked to do.
+These are the original records; the newer review stages have not been applied
+to them.
 
 ## Cost calculation
 
@@ -76,15 +73,13 @@ card.
 
 ## Round-budget irregularities
 
-The stated `max_guidance_rounds = 3` was not mechanically enforced across the
-preserved batch:
+The runs did not all follow the stated `max_guidance_rounds = 3` limit:
 
 - most runs used at most three total main rounds;
 - `problem_40_run_01` used four;
 - `problem_06` received two guidance items before its final rerun.
 
-The totals therefore describe actual recorded usage, not an equal-budget
-benchmark comparison.
+The totals reflect what was actually run, not a comparison with equal budgets.
 
 ## Directory layout
 
@@ -100,27 +95,23 @@ runs/problem_NN/
   historical_attempts/           excluded from the 43-run totals
 ```
 
-Duplicate labels `38` and `40` are preserved as `_run_01` and `_run_02`.
-Executed branches remain nested beneath the stage that requested them. For
-`problem_38_run_02`, the canonical parent/branch hierarchy is primary; its
-`raw_chronological_layout/` folder preserves the original recovery grouping.
+Problems `38` and `40` each have two runs, named `_run_01` and `_run_02`.
+Lemma attempts sit under the stage that requested them. For
+`problem_38_run_02`, follow that parent/branch layout; the
+`raw_chronological_layout/` folder also retains the original recovery grouping.
 
 ## How to inspect one run
 
 1. Start with `input/target.md` and `input/request.md`.
 2. Read `round_001/prompts/S0.md` before its corresponding output.
 3. Follow later rounds in numerical order.
-4. Treat branch directories as subordinate proof attempts, not main rounds.
-5. Read `final/root_response.md` only as the parent model's conclusion, not as
-   independent mathematical verification.
+4. Open branch directories for the separate lemmas attempted within a round.
+5. Read `final/root_response.md` for the parent model's conclusion. It is not
+   an independent proof review.
 
 ## Interpretation limits
 
-- The 43 runs are the preserved selected set; this README does not claim that
-  they form a balanced sample of all mathematical problem types.
-- Model self-reports and root responses are not correctness labels.
-- Missing telemetry is not zero usage.
-- Historical attempts are useful provenance but are excluded from the headline
-  totals.
-- Comparisons with later pipeline versions must account for changes in prompts,
-  source checking, verifier gates, and round enforcement.
+The 43 selected runs are examples, not a balanced sample of mathematical
+subjects. Earlier attempts are excluded from the totals, and missing usage
+records are not counted as zero. When comparing with later versions, account
+for changes in prompts, source checks, proof reviews, and round limits.

@@ -1,17 +1,16 @@
 # Paper Cleaner
 
-Paper Cleaner retrieves a paper, builds a source-backed statement index, traces
-dependencies, and selects candidate target theorems.
+Paper Cleaner reads a mathematics paper and identifies the theorems you can
+ask the solver to reconstruct. It records each statement, where it appears,
+and which earlier results it depends on.
 
-For the current RIPS workflow, its normal job ends at **Step 5**. Paper Cleaner
-Mini takes the selected target from there and builds the solver-facing theorem
-packet. Steps 6-8 remain available for older cleaner experiments, but they are
-not the packaging route used by the repository's end-to-end commands.
+The current workflow uses **Steps 1–5** to prepare the paper and select a
+theorem. Paper Cleaner Mini then prepares the input for that theorem.
 
 ## Paper Cleaner versus Paper Cleaner Mini
 
-Despite the name, Mini is not a lightweight alternative to Paper Cleaner. The
-two components run in sequence:
+Use both components, in this order. “Mini” refers to its one-theorem scope,
+not a cheaper or smaller replacement for the first cleaner:
 
 ```text
 paper or PDF
@@ -27,19 +26,11 @@ paper or PDF
 | **Paper Cleaner** | the whole paper | normalized source, statement index, dependencies, and selected target IDs |
 | **Paper Cleaner Mini** | one selected target at a time | the definitions, assumptions, and permitted prior results supplied to the solver |
 
-In other words, Paper Cleaner answers **which theorem is being attempted and
-where it came from**. Mini answers **what the solver may know while attempting
-that exact theorem**. Mini does not select a different target, and the models
-inside Mini cannot rewrite the frozen target statement.
+Paper Cleaner answers **which theorem to attempt**. Mini answers **what context
+the solver can use**. Mini keeps the selected theorem unchanged.
 
-The non-mini cleaner can still continue through its older Steps 6-8 when run
-without `--stop-after step5`. That is a retained legacy workflow, not the
-current integrated route into S0-S6.
-
-> [!CAUTION]
-> Cleaner run directories contain third-party paper text, reference proofs, and
-> raw model responses. They are ignored by Git. Do not publish a run directory
-> wholesale.
+The older Steps 6–8 are still available for standalone cleaner runs. The
+end-to-end commands use Mini instead of those steps.
 
 ## Normal use
 
@@ -70,15 +61,15 @@ Inputs/paper_cleaner_input/<paper-id>/
   logs/run.jsonl
 ```
 
-The two files worth opening first are:
+Open these two files first:
 
 - `roles/selection.json`, which lists the selected `mains` and `hardest`
   target IDs;
 - `index/statements.v2.json`, which records each statement, its source span,
   hashes, and paired proof evidence.
 
-Target IDs are intentionally opaque—for example, `stmt-a83f71c209d4`. The
-cleaner does not guess LaTeX theorem numbering.
+An ID such as `stmt-a83f71c209d4` identifies a statement in the source. It is
+not a guessed LaTeX theorem number.
 
 Continue with [Paper Cleaner Mini](../paper_cleaner_mini/README.md) after
 choosing a target ID.
@@ -94,8 +85,8 @@ choosing a target ID.
 5. **Select targets.** Record the main and difficult results eligible for later
    packaging.
 
-Models may propose contextual entries, dependency edges, or target
-nominations. Code owns the target identity and every control-flow decision.
+Models suggest missing context, dependencies, and targets. Code checks the
+source identity and decides whether each stage can continue.
 
 ## Direct commands
 
@@ -117,8 +108,7 @@ Useful options are `--config PATH`, `--runs-dir PATH`, and
 `--stop-after step1` through `step8`. Run `python run.py --help` for the
 current argument list.
 
-Running without `--stop-after step5` executes the retained full eight-stage
-cleaner:
+With no `--stop-after` option, the cleaner runs all eight stages:
 
 ```text
 1 source retrieval       5 target selection
@@ -127,21 +117,20 @@ cleaner:
 4 dependency extraction  8 reports and dashboards
 ```
 
-That route writes manifests and theorem packages under `runs/<paper-id>/`. Do
-not confuse those legacy packages with the target-scoped Mini packages used by
-the integrated solver.
+That older route saves its packages under `runs/<paper-id>/`. They are separate
+from the Mini packages used by the integrated solver.
 
 ## Target integrity
 
-A target is eligible only when the cleaner can bind it to an exact source file
-and span. The statement and its paired proof receive separate hashes and
-provenance records. An explicit proof title that cannot be resolved is recorded
-as unresolved; it does not fall back to proximity. Untitled proofs may be
-paired by strict source adjacency.
+A target must match an exact passage in a source file. The cleaner records
+separate hashes for the statement and its proof so later checks can detect
+changes. If a proof names a theorem that cannot be identified, the pairing is
+left unresolved. An untitled proof may be paired only by strict source
+adjacency.
 
-Later packaging stages freeze the selected statement in `target.tex`,
-`target.json`, and Section 6 of `problem.md`. Missing hashes, changed source
-slices, or target drift are hard failures.
+Packaging copies the selected statement into `target.tex`, `target.json`, and
+Section 6 of `problem.md`. Missing hashes, changed source text, or a changed
+target stop the run.
 
 ## Reading and resuming a run
 
@@ -156,14 +145,16 @@ For a full eight-stage run, start with:
 | `runs/<paper>/logs/run.jsonl` | provider errors and detailed diagnostics |
 | `runs/<paper>/report/dashboard.html` | paper-level summary |
 
-Steps use input fingerprints and model calls use a cache. Re-running the same
-command can reuse compatible work. Changes to prompts, configuration, inputs,
-or cache state may trigger new API calls, so provider telemetry remains the
-source of truth for cost.
+Rerunning the same command can reuse cached work. Changes to prompts, settings,
+inputs, or the cache may trigger new API calls; check the provider's usage
+records for actual costs.
 
-If a paper produces no package, inspect `status.json` and `excluded.json`
-before treating that as a property of the mathematics. It may instead indicate
-missing context, source evidence, an audit failure, or a pipeline defect.
+If no package was produced, read `status.json` and `excluded.json` for the
+reason. Missing source material or a failed check is different from a solver
+failing to prove the theorem.
+
+Run directories can contain paper text, reference proofs, and raw model
+responses. Git ignores them; review individual files before sharing them.
 
 ## Files in this component
 

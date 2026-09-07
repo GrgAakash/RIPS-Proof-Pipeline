@@ -1,14 +1,16 @@
 # Standalone verifier cascade
 
-This package runs the isolated mathematical review sequence used by the solver:
+This package runs the proof reviewers. Three A agents review the same proof
+separately, Composer A combines their findings, B looks for its weakest point,
+and C tries to break it:
 
 ```text
 A1 + A2 + A3 → Composer A → Verifier B → Verifier C
 ```
 
-It supports deterministic mocks, saved-report replay, individual API-backed
-stages, and a full API-backed cascade. It does not replace the integrated
-solver controller, exact-target gate, or citation gate.
+You can try fixed mock responses, replay saved reports, or run individual
+reviews and the full sequence through the API. The standalone commands do not
+run the integrated solver's controller, statement check, or citation check.
 
 ## Free mock run
 
@@ -23,8 +25,8 @@ python -m verifiers run-mock \
   --skeleton-ref 'skeleton.tex#reflexivity'
 ```
 
-The mock exercises parsing, routing, and artifact creation. It does not verify
-an external mathematical claim.
+The mock checks that reports are read and files are saved correctly. Its
+responses are fixed; it does not test a real proof.
 
 ## Command surface
 
@@ -66,7 +68,6 @@ are generated views checked for drift by the offline suite.
 
 ## Interpretation boundary
 
-These verifiers are LLM-based critics, not independent formal proof kernels.
-Their reports are evidence for the deterministic controller. Report the exact
-terminal status and do not describe a partial or verifier-only result as a
-proved theorem.
+These are language-model reviews, not formal verification. Report which checks
+ran and what they found; a partial review or standalone verifier run is not a
+complete pipeline result.

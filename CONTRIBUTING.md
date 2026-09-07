@@ -47,6 +47,16 @@ these dependencies and should run without skips.
   behavior aligned.
 - Link to real repository artifacts; do not promise supplements or reports that
   are not present.
+- Treat `Examples/cayley/` as an archived run: keep raw role outputs unchanged.
+  Its offline tests check file hashes, recorded gates, and the private-file
+  boundary. Improve the guide without silently rewriting the evidence.
+- After changing result tables or `Results/paper_reproduction/subjects.json`,
+  regenerate the figures and subject lists with
+  `python3 -B docs/build_results_charts.py --write`; offline tests check for drift.
+- Rebuild the paired subject comparison with
+  `python3 -B docs/build_paired_results.py --write`. Match exact paper/target
+  identifiers; add a renumbering alias only when supported by statement-level
+  evidence. Keep unresolved labels out of paired totals, not in the failure count.
 
 ## Pull-request checklist
 
