@@ -2,6 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it using this metadata."
 title: "RIPS Proof Pipeline"
 type: software
+license: MIT
 version: 0.1.0
 abstract: >-
   A source-grounded pipeline for reconstructing and auditing mathematical

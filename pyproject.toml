@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Proof-oriented paper cleaner, S0-S6 solver, citation gate, and verifier cascade."
 requires-python = ">=3.9"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = []
 
 [project.scripts]

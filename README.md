@@ -375,5 +375,9 @@ artifact paths, but never attach API keys, private paper text, or gold proofs.
 
 ## License
 
-No open-source license is currently declared. Until the project owners choose
-one, contact the maintainers before reusing or redistributing the code.
+The project's original code, prompts, and documentation are licensed under the
+[MIT License](LICENSE). You may use, modify, and redistribute them, including
+commercially, while preserving the copyright and license notices.
+
+Third-party papers, benchmark material, and source excerpts retain their original
+rights and terms. This license does not grant additional rights to those materials.

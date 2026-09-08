@@ -71,7 +71,10 @@ these dependencies and should run without skips.
 
 ## Licensing
 
-The project owners have not yet selected an open-source license. Until they do,
-public visibility does not grant permission to reuse or redistribute the code.
-Prospective contributors should contact the maintainers if licensing terms
-affect their contribution.
+The project's original code, prompts, and documentation use the
+[MIT License](LICENSE). Contributions to these parts should be provided under
+the same license. Submit only material you have the right to contribute, and
+identify any third-party material and its applicable terms.
+
+Third-party papers, benchmark material, and source excerpts retain their original
+rights and terms; the project's license does not relicense them.
